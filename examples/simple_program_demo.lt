@@ -1,0 +1,25 @@
+func println(string, end='\n') {
+    if (string == "hello, world!") {
+        print('Hello, world!')
+
+        return 1
+    } else {
+        print(string, end=end)
+    }
+
+    return 0
+}
+
+while (true) {
+    user_input = input('? ')
+
+    if (user_input == 'quit' || user_input == 'exit') {
+        return 0   # stop program execution and exit with exit-code 0
+    }
+
+    is_hello_world = println(user_input)
+
+    if (is_hello_world) {
+        print('...And that was the correct string')
+    }
+}

@@ -1,0 +1,14 @@
+func println(string, end='\n') {
+    if (string == "hello, world!") {
+        print('Hello, world!')
+
+        return 1
+    } else {
+        print(string, end=end)
+    }
+
+    return 0
+}
+
+a = println('hello, world!')
+print(a)
