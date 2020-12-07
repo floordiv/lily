@@ -6,6 +6,7 @@ from lily.core.semantic import semantic
 from lily.lib.std.bindings import pybindings
 from lily.core.interpreter.eval import evaluate
 from lily.core.utils.contexts import main_context, Context
+from lily.core.utils.tools import process_escape_characters
 from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
                                         CONTINUE_STATEMENT, BREAK_STATEMENT)
 
@@ -14,7 +15,7 @@ EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BR
 
 
 def interpret(raw: str, exit_after_execution=True):
-    lexer = Lexer(raw)
+    lexer = Lexer(process_escape_characters(raw))
     lexemes = lexer.parse()
 
     main_context.variables = pybindings  # initialize global namespace
@@ -78,6 +79,6 @@ def test_all(examples_dir='../../examples/', exclude=None):
     print(splitline)
 
 
-# interpret(load_example('simple_program_demo'))
+interpret(load_example('simple_program_demo'))
 # test_all(exclude=['simple_program_demo.lt'])
-interpret('print(-!false)')
+# interpret('print(-!false)')

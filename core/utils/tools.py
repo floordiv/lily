@@ -7,6 +7,26 @@ from lily.core.utils.operators import characters
 from lily.core.utils.tokens import BasicToken
 
 
+escape_characters = {
+    '\\n': '\n',
+    '\\r': '\r',
+    '\\b': '\b',
+    '\\t': '\t',
+    '\\a': '\a',
+    '\\f': '\f',
+    '\\v': '\v',
+    '\\\'': '\'',
+    '\\\"': '\"'
+}
+
+
+def process_escape_characters(raw):
+    for raw_character, to_replace in escape_characters.items():
+        raw = raw.replace(raw_character, to_replace)
+
+    return raw
+
+
 def isfloat(string):
     try:
         float(string)
