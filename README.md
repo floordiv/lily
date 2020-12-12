@@ -108,3 +108,9 @@ while (i < 10) {  # break and continue statements also work here
   i = i + 1
 } print(100)
 ```
+---
+Imports:
+```
+import 'package_name'
+print(package_name.package_description)  # for example
+```
