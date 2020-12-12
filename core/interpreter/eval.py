@@ -14,8 +14,6 @@ def evaluate(tokens, context: dict = None, return_token=False):
     while len(stack) > 1 or (stack and stack[0].primary_type in (PARENTHESIS, FCALL, VARIABLE)):
         op, op_start, op_end = get_op(stack)
 
-        # print(op, stack)
-
         if hasattr(op, 'primary_type') and op.primary_type == PARENTHESIS:
             result = evaluate(op.value, context=context, return_token=True)
             apply_token_unary(result, op.unary)
@@ -61,9 +59,14 @@ def evaluate_op(op, context):
 
     left, op, right = op
     left, right = process_token(left, context), process_token(right, context)
-    # print(op)
+
+    if isinstance(left, BasicToken):
+        left = left.value
+    if isinstance(right, BasicToken):
+        right = right.value
+
     executor = executors[op.value]
-    result = executor(left.value, right.value)
+    result = executor(left, right)
     result_token = BasicToken(context, pytypes2lotus[type(result)], result)
 
     return result_token
@@ -74,15 +77,15 @@ def process_token(token, context):
         value = context[token.value]
 
         if isinstance(value, BasicToken):
+            process_token_exclam(value)
             value = value.value
+        else:
+            value = BasicToken(context, pytypes2lotus[type(value)], value)
+            value.exclam = token.exclam
+            process_token_exclam(value)
+            apply_token_unary(value, to_unary=token.unary)
 
-        cloned = token.clone()
-        cloned.type = cloned.primary_type = pytypes2lotus[type(value)]
-        cloned.value = value
-
-        process_token_exclam(cloned)
-
-        return cloned
+        return value
 
     process_token_exclam(token)
 

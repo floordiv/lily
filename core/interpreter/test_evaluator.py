@@ -34,4 +34,4 @@ for expr in exprs:
     evaluated = evaluate(lexemes, context={'pi': pi, 'x': x})
     should_be = eval(expr)
     print('=', evaluated, 'passed' if evaluated == should_be else f'failed (should be: {should_be})')
-# print(evaluate(lexer.parse("user_input == 'quit' || user_input == 'exit'"), context={'user_input': 'no'}))
+# print(evaluate(lexer.parse("-pi"), context={'pi': pi}))

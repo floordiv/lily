@@ -8,20 +8,21 @@ from lily.core.interpreter.eval import evaluate
 from lily.core.utils.contexts import main_context, Context
 from lily.core.utils.tools import process_escape_characters
 from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
-                                        CONTINUE_STATEMENT, BREAK_STATEMENT)
+                                        CONTINUE_STATEMENT, BREAK_STATEMENT,
+                                        IMPORT_STATEMENT)
 
 
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)
 
 
-def interpret(raw: str, exit_after_execution=True):
+def interpret(raw: str, context=main_context, exit_after_execution=True):
     lexer = Lexer(process_escape_characters(raw))
     lexemes = lexer.parse()
 
-    main_context.variables = pybindings  # initialize global namespace
-    final_tokens = semantic.parse(main_context, executor, evaluate, lexemes)
+    context.variables = pybindings  # initialize global namespace
+    final_tokens = semantic.parse(context, executor, evaluate, lexemes)
 
-    exit_code = executor(final_tokens, context=main_context)
+    exit_code = executor(final_tokens, context=context)
 
     if exit_code is not None and exit_code.type == RETURN_STATEMENT:
         exit_code = exit_code.value
@@ -37,8 +38,14 @@ def executor(tokens, context=None):
     tokens: tokens after semantic parse
     """
 
+    if context is None:
+        context = {}
+
     for token in tokens:
-        if token.type == MATHEXPR:
+        if token.type == IMPORT_STATEMENT:
+            interpreted, module_context = import_file(token.path)
+            context[token.name] = module_context
+        elif token.type == MATHEXPR:
             evaluate(token.clone().value, context=context)
         elif token.type in EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES:
             if token.type == RETURN_STATEMENT:
@@ -50,6 +57,16 @@ def executor(tokens, context=None):
 
             if hasattr(result, 'type') and result.type in EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES:
                 return result
+
+
+def import_file(path):
+    with open(path) as fd:
+        source = fd.read()
+
+    new_context = Context()
+    new_context.variables = pybindings.copy()
+
+    return interpret(source, context=new_context, exit_after_execution=False), new_context
 
 
 def load_example(name):
@@ -79,6 +96,6 @@ def test_all(examples_dir='../../examples/', exclude=None):
     print(splitline)
 
 
-interpret(load_example('simple_program_demo'))
-# test_all(exclude=['simple_program_demo.lt'])
+# interpret(load_example('import_test'))
+test_all(exclude=['simple_program_demo.lt'])
 # interpret('print(-!false)')

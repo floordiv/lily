@@ -7,9 +7,6 @@ def function_call(executor, evaluator, context, semantic_parser, tokens):
     args, kwargs = parse_func_args(context, args_kwargs, leave_tokens=True)
     args = _parse_args(context, executor, evaluator, args, semantic_parser)
 
-    # if args[0].type == MATHEXPR:
-    #     args = []
-
     return context, evaluator, name.value, args, kwargs, name.unary
 
 
@@ -74,6 +71,12 @@ def break_token(executor, evaluator, context, semantic_parser, tokens):
 
 def continue_token(executor, evaluator, context, semantic_parser, tokens):
     return tuple()
+
+
+def import_statement(executor, evaluator, context, semantic_parser, tokens):
+    _, path = tokens
+
+    return (path.value,)
 
 
 def _parse_args(context, executor, evaluator, args, parse_semantic):

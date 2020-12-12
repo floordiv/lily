@@ -6,13 +6,31 @@ class Context:
         self.variables = init_vars
 
     def __getitem__(self, item):
-        return self.variables[item]
+        return self.get(item)
 
     def __setitem__(self, key, value):
-        self.variables[key] = value
+        *split_key, last_var = key.split('.')
+        variables = self.variables
+
+        for key_element in split_key:
+            if key_element not in variables:
+                variables[key_element] = Context()
+
+            variables = variables[key_element]
+
+        variables[last_var] = value
 
     def get(self, key, value_instead=None):
-        return self.variables.get(key, value_instead)
+        first_varpath_element, *varpath = key.split('.')
+        value = self.variables[first_varpath_element]
+
+        try:
+            for var in varpath:
+                value = value.get(var)
+        except AttributeError:
+            return value_instead
+
+        return value
 
     def items(self):
         return self.variables.items()

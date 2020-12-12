@@ -134,3 +134,8 @@ def get_token_index(list_, token_type):
             return index
 
     return None
+
+
+def readfile(path):
+    with open(path) as fd:
+        return fd.read()

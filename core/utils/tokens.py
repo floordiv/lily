@@ -1,11 +1,11 @@
-from typing import Iterable
 from copy import deepcopy
 
 from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         FUNCASSIGN, VARASSIGN, FCALL,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
                                         CODE, RETURN_STATEMENT, BREAK_STATEMENT,
-                                        CONTINUE_STATEMENT, VARIABLE, MATHEXPR)
+                                        CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
+                                        IMPORT_STATEMENT)
 
 
 class BasicToken:
@@ -119,10 +119,14 @@ class Function:
 
         executor_response = self.executor(self.code, self.context)
 
-        if executor_response.type != RETURN_STATEMENT:
+        if executor_response is None:
+            value = None
+        elif executor_response.type != RETURN_STATEMENT:
             raise SyntaxError('unexpected return token type: ' + executor_response.type)
+        else:
+            value = executor_response.value
 
-        return executor_response.value
+        return value
 
     def execute(self):
         self.context[self.name] = self
@@ -322,17 +326,15 @@ class ContinueStatement:
     __repr__ = __str__
 
 
-class VariablePath:
-    def __init__(self, raw_var, splitter='.'):
-        self.full_path = raw_var.split(splitter)
+class ImportStatement:
+    def __init__(self, path):
+        self.path = self.value = path + '.lt'
+        self.name = path.lstrip('.')
 
-        self.head = self.full_path[0]
-        self.tail = self.full_path[-1]
+        self.type = self.primary_type = IMPORT_STATEMENT
 
-    def get_value(self, head_context):
-        context = head_context
+    def __str__(self):
+        return f'IMPORT({self.path})'
 
-        for variable_path_element in self.full_path:
-            context = context[variable_path_element[:-1]]
+    __repr__ = __str__
 
-        return context[self.tail]

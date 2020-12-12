@@ -45,6 +45,7 @@ class Lexer:
 
         output_tokens = [tokens.BasicToken(context, tokentypes.NO_TYPE, '')]
         skip_iters = 0
+        dot = operators.characters['.']
 
         for index, letter in enumerate(code):
             if skip_iters:
@@ -67,6 +68,10 @@ class Lexer:
                 if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[-1].value + letter in operators.characters:
                     output_tokens[-1].value += letter
                 else:
+                    if letter == '.':
+                        output_tokens[-1].value += '.'
+                        continue
+
                     self.append(output_tokens, tokens.BasicToken(context, tokentypes.OPERATOR, letter, primary_type=tokentypes.OPERATOR))
             else:
                 if letter in tuple('\'"'):
@@ -80,8 +85,10 @@ class Lexer:
 
                 output_tokens[-1].value += letter
 
-        self.provide_token_types(output_tokens)
-        final = self.parse_unary(self.parse_braces(context, output_tokens))
+        self.provide_token_type(output_tokens[-1])
+        parsed_but_no_unary = self.parse_braces(context, output_tokens)
+
+        final = self.parse_unary(parsed_but_no_unary)
 
         if final[-1].value == '':
             final.pop()
@@ -94,6 +101,9 @@ class Lexer:
         else:
             lst.append(item)
 
+        if len(lst) > 1:
+            self.provide_token_type(lst[-2])
+
     def get_string_ending(self, string):
         opener = string[0]
 
@@ -102,10 +112,6 @@ class Lexer:
                 return string[:index + 1], index
 
         return string, -1
-
-    def provide_token_types(self, tokens_):
-        for token in tokens_:
-            self.provide_token_type(token)
 
     def provide_token_type(self, token):
         if token.value.isdigit():
@@ -215,6 +221,7 @@ class Lexer:
         return output + temp
 
 
-# lexer = Lexer("print(!true == true)")
+# lexer = Lexer("(pi+1)*(pi+2)")
+# lexer = Lexer('hello.world')
 # lexemes = lexer.parse()
-# print(lexemes[1].value[0].exclam)
+# print(lexemes)

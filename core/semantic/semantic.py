@@ -1,22 +1,24 @@
-from typing import Iterable
-
 from lily.core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
                                     IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
                                     FunctionCall, BasicToken, ReturnStatement,
-                                    BreakStatement, ContinueStatement, Branch)
+                                    BreakStatement, ContinueStatement, Branch,
+                                    ImportStatement)
 from lily.core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
                                       FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
                                       FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
-                                      BREAK_KEYWORD, CONTINUE_KEYWORD)
+                                      BREAK_KEYWORD, CONTINUE_KEYWORD,
+                                      IMPORT_KEYWORD)
 from lily.core.utils.tokentypes import (VARIABLE, OPERATOR, PARENTHESIS,
                                         BRACES, FBRACES, ANY, NEWLINE,
-                                        MATHEXPR, IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK)
+                                        MATHEXPR, IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
+                                        IMPORT_STATEMENT, STRING)
 from lily.core.utils.operators import characters
 from lily.core.utils.tools import get_token_index
 from lily.core.semantic.parsers import (if_elif_branch, else_branch,
                                         function_call, function_assign,
                                         for_loop, while_loop, var_assign,
-                                        return_token, break_token, continue_token)
+                                        return_token, break_token, continue_token,
+                                        import_statement)
 
 
 class MatchToken:
@@ -52,6 +54,8 @@ constructions = {
     ReturnStatement: (MatchToken(RETURN_KEYWORD), MatchToken(ANY)),
     BreakStatement: (MatchToken(BREAK_KEYWORD),),
     ContinueStatement: (MatchToken(CONTINUE_KEYWORD),),
+    ImportStatement: (MatchToken(IMPORT_KEYWORD), MatchToken(STRING)),
+
 }
 parsers = {
     Function: function_assign,
@@ -65,6 +69,7 @@ parsers = {
     ReturnStatement: return_token,
     BreakStatement: break_token,
     ContinueStatement: continue_token,
+    ImportStatement: import_statement,
 }
 
 
@@ -133,11 +138,9 @@ def branches_leaves_to_branches_trees(context, executor, evaluator, tokens):
 
 
 def parse(context, executor, evaluator, tokens):
-    temp = tokens
+    temp = tokens[:]
     temp_math_expr_tokens = []
     output_tokens = []
-
-    # print('Semantic: parsing:', tokens)
 
     while temp:
         construction, tokens = startswith(temp)
@@ -162,7 +165,5 @@ def parse(context, executor, evaluator, tokens):
     if temp_math_expr_tokens:
         token = BasicToken(context, MATHEXPR, temp_math_expr_tokens)
         output_tokens.append(token)
-
-    # print('Semantic: finally parsed:', output_tokens)
 
     return branches_leaves_to_branches_trees(context, executor, evaluator, output_tokens)
