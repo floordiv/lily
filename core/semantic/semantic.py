@@ -7,7 +7,7 @@ from lily.core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
                                       FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
                                       FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
                                       BREAK_KEYWORD, CONTINUE_KEYWORD,
-                                      IMPORT_KEYWORD)
+                                      IMPORT_KEYWORD, AS_KEYWORD)
 from lily.core.utils.tokentypes import (VARIABLE, OPERATOR, PARENTHESIS,
                                         BRACES, FBRACES, ANY, NEWLINE,
                                         MATHEXPR, IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
@@ -54,7 +54,7 @@ constructions = {
     ReturnStatement: (MatchToken(RETURN_KEYWORD), MatchToken(ANY)),
     BreakStatement: (MatchToken(BREAK_KEYWORD),),
     ContinueStatement: (MatchToken(CONTINUE_KEYWORD),),
-    ImportStatement: (MatchToken(IMPORT_KEYWORD), MatchToken(STRING)),
+    ImportStatement: (MatchToken(IMPORT_KEYWORD), MatchToken(STRING), MatchToken(AS_KEYWORD), MatchToken(VARIABLE)),
 
 }
 parsers = {

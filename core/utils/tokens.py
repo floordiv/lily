@@ -327,14 +327,14 @@ class ContinueStatement:
 
 
 class ImportStatement:
-    def __init__(self, path):
+    def __init__(self, path, name):
         self.path = self.value = path + '.lt'
-        self.name = path.lstrip('.')
+        self.name = name
 
         self.type = self.primary_type = IMPORT_STATEMENT
 
     def __str__(self):
-        return f'IMPORT({self.path})'
+        return f'IMPORT({self.name}:{self.path})'
 
     __repr__ = __str__
 

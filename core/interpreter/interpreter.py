@@ -1,5 +1,5 @@
 from sys import exit
-from os import listdir
+from os import listdir, chdir
 
 from lily.core.lexer.lexer import Lexer
 from lily.core.semantic import semantic
@@ -60,7 +60,7 @@ def executor(tokens, context=None):
 
 
 def import_file(path):
-    with open(path) as fd:
+    with open('./' + path) as fd:
         source = fd.read()
 
     new_context = Context()
@@ -70,11 +70,11 @@ def import_file(path):
 
 
 def load_example(name):
-    with open('../../examples/' + name + '.lt') as example:
+    with open('./examples/' + name + '.lt') as example:
         return example.read()
 
 
-def test_all(examples_dir='../../examples/', exclude=None):
+def test_all(examples_dir='./examples/', exclude=None):
     if exclude is None:
         exclude = ()
 
@@ -96,6 +96,10 @@ def test_all(examples_dir='../../examples/', exclude=None):
     print(splitline)
 
 
-# interpret(load_example('import_test'))
-test_all(exclude=['simple_program_demo.lt'])
+if __name__ == '__main__':
+    chdir('../..')
+
+
+interpret(load_example('import_test'))
+# test_all(exclude=['simple_program_demo.lt'])
 # interpret('print(-!false)')

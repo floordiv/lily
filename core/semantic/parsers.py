@@ -74,9 +74,9 @@ def continue_token(executor, evaluator, context, semantic_parser, tokens):
 
 
 def import_statement(executor, evaluator, context, semantic_parser, tokens):
-    _, path = tokens
+    _, path, _, name = tokens
 
-    return (path.value,)
+    return path.value, name.value
 
 
 def _parse_args(context, executor, evaluator, args, parse_semantic):
