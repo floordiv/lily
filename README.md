@@ -111,6 +111,6 @@ while (i < 10) {  # break and continue statements also work here
 ---
 Imports:
 ```
-import 'package_name'
-print(package_name.package_description)  # for example
+import 'path/to/package' as my_package  # full path to my_package is ./path/to/package.lt
+print(my_package.package_description)  # for example
 ```
