@@ -20,6 +20,12 @@ def function_assign(executor, evaluator, context, semantic_parser, tokens):
     return context, executor, name.value, args, kwargs, semantic_parser(context, executor, evaluator, code.value)
 
 
+def class_assign(executor, evaluator, context, semantic_parser, tokens):
+    _, name, body = tokens
+
+    return context, executor, name.value, semantic_parser(context, executor, evaluator, body.value)
+
+
 def if_elif_branch(executor, evaluator, context, semantic_parser, tokens):
     _, expr, code = tokens
 

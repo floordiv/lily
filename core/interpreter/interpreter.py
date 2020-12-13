@@ -3,7 +3,6 @@ from os import listdir, chdir
 
 from lily.core.lexer.lexer import Lexer
 from lily.core.semantic import semantic
-from lily.lib.std.bindings import pybindings
 from lily.core.interpreter.eval import evaluate
 from lily.core.utils.contexts import main_context, Context
 from lily.core.utils.tools import process_escape_characters
@@ -18,10 +17,7 @@ EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BR
 def interpret(raw: str, context=main_context, exit_after_execution=True):
     lexer = Lexer(process_escape_characters(raw))
     lexemes = lexer.parse()
-
-    context.variables = pybindings  # initialize global namespace
     final_tokens = semantic.parse(context, executor, evaluate, lexemes)
-
     exit_code = executor(final_tokens, context=context)
 
     if exit_code is not None and exit_code.type == RETURN_STATEMENT:
@@ -64,7 +60,6 @@ def import_file(path):
         source = fd.read()
 
     new_context = Context()
-    new_context.variables = pybindings.copy()
 
     return interpret(source, context=new_context, exit_after_execution=False), new_context
 
@@ -100,6 +95,6 @@ if __name__ == '__main__':
     chdir('../..')
 
 
-interpret(load_example('import_test'))
+interpret(load_example('classes'))
 # test_all(exclude=['simple_program_demo.lt'])
 # interpret('print(-!false)')

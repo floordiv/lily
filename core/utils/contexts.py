@@ -1,7 +1,10 @@
+from lily.lib.std.bindings import pybindings
+
+
 class Context:
     def __init__(self, init_vars=None):
         if init_vars is None:
-            init_vars = {}
+            init_vars = pybindings.copy()
 
         self.variables = init_vars
 
@@ -15,8 +18,13 @@ class Context:
         for key_element in split_key:
             if key_element not in variables:
                 variables[key_element] = Context()
+            elif hasattr(variables, 'type'):    # this is some kinda token
+                variables = variables.context
 
             variables = variables[key_element]
+
+        if hasattr(variables, 'type'):
+            variables = variables.context
 
         variables[last_var] = value
 
@@ -26,6 +34,9 @@ class Context:
 
         try:
             for var in varpath:
+                if hasattr(value, 'type'):
+                    value = value.context
+
                 value = value.get(var)
         except AttributeError:
             return value_instead

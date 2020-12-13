@@ -1,0 +1,15 @@
+class MyClass {
+    func __init__(cls, a) {
+        cls.a = a
+        cls.me = 'aaaaa'
+    }
+
+    func hello_world(cls) {
+        print('hello, world!')
+        print(cls.a)
+    }
+}
+
+my_class = MyClass(5)
+print(my_class.a, my_class.me)
+my_class.hello_world()

@@ -5,7 +5,7 @@ from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
                                         CODE, RETURN_STATEMENT, BREAK_STATEMENT,
                                         CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
-                                        IMPORT_STATEMENT)
+                                        IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE)
 
 
 class BasicToken:
@@ -54,6 +54,7 @@ class FunctionCall:
 
     def execute(self):
         func = self.context[self.name]
+
         args = []
         kwargs = {}
 
@@ -121,15 +122,79 @@ class Function:
 
         if executor_response is None:
             value = None
-        elif executor_response.type != RETURN_STATEMENT:
-            raise SyntaxError('unexpected return token type: ' + executor_response.type)
-        else:
+        elif executor_response.type == RETURN_STATEMENT:
             value = executor_response.value
+        else:
+            raise SyntaxError('unexpected return token type: ' + executor_response.type)
 
         return value
 
     def execute(self):
         self.context[self.name] = self
+
+
+class Class:
+    def __init__(self, context, executor, name, body):
+        self.context = context
+        self.executor = executor
+        self.name = name
+        self.body = self.value = body
+
+        self.type = self.primary_type = CLASSASSIGN
+
+    def execute(self):
+        self.context[self.name] = self
+
+    def __call__(self, *init_args, **init_kwargs):
+        """
+        In case of classes, this execute is playing a role of python's __new__ analog
+        Custom __new__ functions are currently unsupported
+        """
+
+        return ClassInstance(self.context, self.executor, init_args, init_kwargs, self.body)
+
+
+class ClassInstance:
+    def __init__(self, context, executor, init_args, init_kwargs, body):
+        self.context = context
+        self.executor = executor
+        self.init_args = init_args
+        self.init_kwargs = init_kwargs
+        self.body = self.value = body
+
+        self.type = self.primary_type = CLASSINSTANCE
+
+        executor(body, context=context)  # this initializes instance's context (assign functions, etc.)
+        self.init_instance()             # finally! Time to call __init__ function
+
+    def __getattr__(self, item):
+        item = self.context[item]
+
+        if hasattr(item, 'type') and item.type == FUNCASSIGN:
+            # instead of lambda *args, **kwargs: item(self, *args, **kwargs)
+            item = self.class_function_decorator(item)
+
+        return item
+
+    def __getattribute__(self, item):
+        return object.__getattribute__(self, item)
+
+    def init_instance(self):
+        init = self.get_init_func()
+
+        if init is not None:
+            init(self, *self.init_args, **self.init_kwargs)
+
+    def get_init_func(self):
+        for token in self.body:
+            if token.type == FUNCASSIGN and token.name == '__init__':
+                return token
+
+    def class_function_decorator(self, function):
+        def wrapper(*args, **kwargs):
+            function(self, *args, **kwargs)
+
+        return wrapper
 
 
 class Branch:

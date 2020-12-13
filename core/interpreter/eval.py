@@ -2,7 +2,8 @@ from lily.core.utils.operators import executors
 from lily.core.utils.tokens import BasicToken
 from lily.core.utils.tokentypes import (OPERATOR, FCALL,
                                         PARENTHESIS, VARIABLE,
-                                        NO_TYPE, pytypes2lotus)
+                                        NO_TYPE, pytypes2lotus,
+                                        CLASSINSTANCE)
 
 
 def evaluate(tokens, context: dict = None, return_token=False):
@@ -50,8 +51,10 @@ def get_op(tokens):
 
 def evaluate_op(op, context):
     if hasattr(op[0], 'type') and op[0].type == FCALL:
-        function_response = op[0].execute()
-        response_token = BasicToken(context, pytypes2lotus[type(function_response)], function_response, unary=op[0].unary)
+        func = op[0]
+        function_response = func.execute()
+        new_token_type = pytypes2lotus.get(type(function_response), CLASSINSTANCE)
+        response_token = BasicToken(context, new_token_type, function_response, unary=func.unary)
 
         return response_token
     elif len(op) == 1:
