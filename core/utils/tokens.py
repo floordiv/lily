@@ -96,17 +96,18 @@ class Function:
         self.args = args
         self.kwargs = kwargs
         self.code = code
+        self.extend_args = ()
 
         self.expected_args = len(args)
         self.type = self.primary_type = FUNCASSIGN
 
     def __call__(self, *args, **kwargs):
-        given_args_len = len(args)
+        given_args_len = len(args) + len(self.extend_args)
 
         if self.expected_args != given_args_len:
             raise TypeError(f'{self.name}: expected {self.expected_args} arguments, {given_args_len} got instead')
 
-        for arg, given_arg in zip(self.args, args):
+        for arg, given_arg in zip(self.args, self.extend_args + args):
             self.context[arg.value] = given_arg
 
         for default_kw_var, default_kw_val in self.kwargs.items():
@@ -164,15 +165,14 @@ class ClassInstance:
 
         self.type = self.primary_type = CLASSINSTANCE
 
-        executor(body, context=context)  # this initializes instance's context (assign functions, etc.)
-        self.init_instance()             # finally! Time to call __init__ function
+        self.extend_all_functions_with_cls_arg()
+        # this initializes instance's context (assign functions, etc.)
+        executor(body, context=context)
+        # finally! Time to call __init__ function
+        self.init_instance()
 
     def __getattr__(self, item):
         item = self.context[item]
-
-        if hasattr(item, 'type') and item.type == FUNCASSIGN:
-            # instead of lambda *args, **kwargs: item(self, *args, **kwargs)
-            item = self.class_function_decorator(item)
 
         return item
 
@@ -183,18 +183,17 @@ class ClassInstance:
         init = self.get_init_func()
 
         if init is not None:
-            init(self, *self.init_args, **self.init_kwargs)
+            init(*self.init_args, **self.init_kwargs)
 
     def get_init_func(self):
         for token in self.body:
             if token.type == FUNCASSIGN and token.name == '__init__':
                 return token
 
-    def class_function_decorator(self, function):
-        def wrapper(*args, **kwargs):
-            function(self, *args, **kwargs)
-
-        return wrapper
+    def extend_all_functions_with_cls_arg(self):
+        for token in self.body:
+            if token.type == FUNCASSIGN:
+                token.extend_args = (self,)
 
 
 class Branch:
@@ -255,22 +254,6 @@ class ElseBranchLeaf:
 
     def __str__(self):
         return str(self.code)
-
-
-class Code:
-    def __init__(self, context, executor, raw):
-        self.context = context
-        # executor executes already parsed code. It is a function from interpreter or like that
-        self.executor = executor
-        self.raw = raw
-
-        self.type = self.primary_type = CODE
-
-    def execute(self, context=None):
-        if context is None:
-            context = self.context
-
-        return self.executor(context, self.raw)
 
 
 class ForLoop:

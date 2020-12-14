@@ -8,7 +8,7 @@ from lily.core.utils.contexts import main_context, Context
 from lily.core.utils.tools import process_escape_characters
 from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
                                         CONTINUE_STATEMENT, BREAK_STATEMENT,
-                                        IMPORT_STATEMENT)
+                                        IMPORT_STATEMENT, FUNCASSIGN)
 
 
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)

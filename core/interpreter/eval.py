@@ -83,7 +83,7 @@ def process_token(token, context):
             process_token_exclam(value)
             value = value.value
         else:
-            value = BasicToken(context, pytypes2lotus[type(value)], value)
+            value = BasicToken(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
             value.exclam = token.exclam
             process_token_exclam(value)
             apply_token_unary(value, to_unary=token.unary)
