@@ -114,3 +114,24 @@ Imports:
 import 'path/to/package' as my_package  # full path to my_package is ./path/to/package.lt
 print(my_package.package_description)  # for example
 ```
+---
+Classes:
+```
+class MyClass {
+  func __init__(cls, a, b) {
+    cls.a = a
+    cls.b = b
+  }
+  
+  func get_sum(cls) {
+    return (cls.a + cls.b)
+  }
+}
+
+my_class = MyClass(1, 2)
+print(my_class.get_sum())  # output: 3
+```
+
+cls: class instance (can be named, as you want. `self`, for example, or `this`)
+
+Actually, in theory, classes also supports all the python's operators overloading. But I haven't tested it yet
