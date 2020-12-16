@@ -7,7 +7,7 @@ def function_call(executor, evaluator, context, semantic_parser, tokens):
     args, kwargs = parse_func_args(context, args_kwargs, leave_tokens=True)
     args = _parse_args(context, executor, evaluator, args, semantic_parser)
 
-    return context, evaluator, name.value, args, kwargs, name.unary
+    return evaluator, name.value, args, kwargs, name.unary
 
 
 def function_assign(executor, evaluator, context, semantic_parser, tokens):
@@ -17,7 +17,7 @@ def function_assign(executor, evaluator, context, semantic_parser, tokens):
     if args[0].type == MATHEXPR:
         args = []
 
-    return context, executor, name.value, args, kwargs, semantic_parser(context, executor, evaluator, code.value)
+    return executor, name.value, args, kwargs, semantic_parser(context, executor, evaluator, code.value)
 
 
 def class_assign(executor, evaluator, context, semantic_parser, tokens):
@@ -44,20 +44,20 @@ def for_loop(executor, evaluator, context, semantic_parser, tokens):
                            split_tokens(start_end_step.value, (SEMICOLON,)))
     start, step = start[0], step[0]
 
-    return context, executor, evaluator, start, end, step, semantic_parser(context, executor, evaluator, code.value)
+    return executor, evaluator, start, end, step, semantic_parser(context, executor, evaluator, code.value)
 
 
 def while_loop(executor, evaluator, context, semantic_parser, tokens):
     _, expr, code = tokens
 
-    return context, executor, evaluator, expr.value, semantic_parser(context, executor, evaluator, code.value)
+    return executor, evaluator, expr.value, semantic_parser(context, executor, evaluator, code.value)
 
 
 def var_assign(executor, evaluator, context, semantic_parser, tokens):
     name, _, *value = tokens
     value = semantic_parser(context, executor, evaluator, value)
 
-    return context, evaluator, name.value, value[0]
+    return evaluator, name.value, value[0]
 
 
 def return_token(executor, evaluator, context, semantic_parser, tokens):
@@ -68,7 +68,7 @@ def return_token(executor, evaluator, context, semantic_parser, tokens):
     else:
         value = [process_token(value, context)]
 
-    return context, evaluator, value
+    return evaluator, value
 
 
 def break_token(executor, evaluator, context, semantic_parser, tokens):

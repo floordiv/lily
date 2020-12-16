@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from lily.core.utils.contexts import Context
 from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         FUNCASSIGN, VARASSIGN, FCALL,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
@@ -42,8 +43,7 @@ class BasicToken:
 
 
 class FunctionCall:
-    def __init__(self, context, evaluator, func_name, args, kwargs, unary):
-        self.context = context
+    def __init__(self, evaluator, func_name, args, kwargs, unary):
         self.evaluator = evaluator
         self.name = func_name
         self.args = args
@@ -52,20 +52,19 @@ class FunctionCall:
 
         self.type = self.primary_type = FCALL
 
-    def execute(self):
-        func = self.context[self.name]
+    def execute(self, context):
+        func = context[self.name]
 
         args = []
         kwargs = {}
 
         for arg in self.args:
             if arg.type == VARIABLE:
-                arg_value = self.evaluator([arg], context=self.context)
-                # arg_value = self.context[arg.value]
+                arg_value = self.evaluator([arg], context=context)
             elif arg.type == MATHEXPR:
-                arg_value = self.evaluator(arg.value, self.context)
+                arg_value = self.evaluator(arg.value, context)
             elif hasattr(arg, 'execute'):
-                arg_value = arg.execute()
+                arg_value = arg.execute(context)
             else:
                 arg_value = arg.value
 
@@ -73,7 +72,7 @@ class FunctionCall:
 
         for kwvar, kwval in self.kwargs.items():
             if kwval.type == VARIABLE:
-                kwval = self.context[kwval.value]
+                kwval = context[kwval.value]
 
             if isinstance(kwval, BasicToken):
                 kwval = kwval.value
@@ -89,8 +88,7 @@ class FunctionCall:
 
 
 class Function:
-    def __init__(self, context, executor, func_name, args, kwargs, code):
-        self.context = context
+    def __init__(self, executor, func_name, args, kwargs, code):
         self.executor = executor
         self.name = func_name
         self.args = args
@@ -107,19 +105,21 @@ class Function:
         if self.expected_args != given_args_len:
             raise TypeError(f'{self.name}: expected {self.expected_args} arguments, {given_args_len} got instead')
 
+        temp_context = Context()
+
         for arg, given_arg in zip(self.args, self.extend_args + args):
-            self.context[arg.value] = given_arg
+            temp_context[arg.value] = given_arg
 
         for default_kw_var, default_kw_val in self.kwargs.items():
-            self.context[default_kw_var] = default_kw_val
+            temp_context[default_kw_var] = default_kw_val
 
         for kw_var, kw_val in kwargs.items():
             if kw_var not in self.kwargs:
                 raise TypeError(f'{self.name}: got an unexpected kwarg: {kw_var}')
 
-            self.context[kw_var] = kw_val
+            temp_context[kw_var] = kw_val
 
-        executor_response = self.executor(self.code, self.context)
+        executor_response = self.executor(self.code, temp_context)
 
         if executor_response is None:
             value = None
@@ -130,8 +130,13 @@ class Function:
 
         return value
 
-    def execute(self):
-        self.context[self.name] = self
+    def execute(self, context):
+        context[self.name] = self
+
+    def __str__(self):
+        return f'{self.name}({self.args}, {self.kwargs})'
+
+    __repr__ = __str__
 
 
 class Class:
@@ -143,8 +148,9 @@ class Class:
 
         self.type = self.primary_type = CLASSASSIGN
 
-    def execute(self):
-        self.context[self.name] = self
+    def execute(self, context):
+        self.context = context
+        context[self.name] = self
 
     def __call__(self, *init_args, **init_kwargs):
         """
@@ -152,12 +158,12 @@ class Class:
         Custom __new__ functions are currently unsupported
         """
 
-        return ClassInstance(self.context, self.executor, init_args, init_kwargs, self.body)
+        return ClassInstance(self.executor, init_args, init_kwargs, self.body)
 
 
 class ClassInstance:
-    def __init__(self, context, executor, init_args, init_kwargs, body):
-        self.context = context
+    def __init__(self, executor, init_args, init_kwargs, body):
+        self.instcontext = Context()
         self.executor = executor
         self.init_args = init_args
         self.init_kwargs = init_kwargs
@@ -167,12 +173,15 @@ class ClassInstance:
 
         self.extend_all_functions_with_cls_arg()
         # this initializes instance's context (assign functions, etc.)
-        executor(body, context=context)
+        executor(body, context=self.instcontext)
         # finally! Time to call __init__ function
         self.init_instance()
 
     def __getattr__(self, item):
-        item = self.context[item]
+        if item == 'context':
+            return self.instcontext
+
+        item = self.instcontext[item]
 
         return item
 
@@ -195,10 +204,12 @@ class ClassInstance:
             if token.type == FUNCASSIGN:
                 token.extend_args = (self,)
 
+    def __str__(self):
+        return f'ClassInstance(context={self.instcontext})'
+
 
 class Branch:
-    def __init__(self, context, executor, evaluator, if_expr, *elif_exprs, else_expr=None):
-        self.context = context
+    def __init__(self, executor, evaluator, if_expr, *elif_exprs, else_expr=None):
         self.evaluator = evaluator
         self.executor = executor
 
@@ -208,20 +219,20 @@ class Branch:
 
         self.type = self.primary_type = BRANCH
 
-    def get_branch(self):
+    def get_branch(self, context):
         for branch in [self.if_expr] + self.elif_exprs:
-            if self.evaluator(branch.expr.copy(), self.context):
+            if self.evaluator(branch.expr, context):
                 return branch
 
         return self.else_expr
 
-    def execute(self):
-        active_branch = self.get_branch()
+    def execute(self, context):
+        active_branch = self.get_branch(context)
 
         if active_branch is None:
             return
 
-        return self.executor(active_branch.code, self.context)
+        return self.executor(active_branch.code, context)
 
 
 class IfBranchLeaf:
@@ -257,8 +268,7 @@ class ElseBranchLeaf:
 
 
 class ForLoop:
-    def __init__(self, context, executor, evaluator, begin, end, step, code):
-        self.context = context
+    def __init__(self, executor, evaluator, begin, end, step, code):
         self.executor = executor
         self.evaluator = evaluator
         self.begin = begin
@@ -268,12 +278,12 @@ class ForLoop:
 
         self.type = self.primary_type = FOR_LOOP
 
-    def execute(self):
+    def execute(self, context):
         # init loop
-        self.begin.execute()
+        self.begin.execute(context)
 
-        while self.evaluator(self.end, context=self.context):
-            executor_response = self.executor(self.code, self.context)
+        while self.evaluator(self.end, context=context):
+            executor_response = self.executor(self.code, context)
 
             if executor_response is not None:
                 if executor_response.type == RETURN_STATEMENT:
@@ -281,12 +291,11 @@ class ForLoop:
                 elif executor_response.type == BREAK_STATEMENT:
                     return
 
-            self.step.execute()
+            self.step.execute(context)
 
 
 class WhileLoop:
-    def __init__(self, context, executor, evaluator, expr, code):
-        self.context = context
+    def __init__(self, executor, evaluator, expr, code):
         self.executor = executor
         self.evaluator = evaluator
         self.expr = deepcopy(expr)
@@ -294,9 +303,9 @@ class WhileLoop:
 
         self.type = self.primary_type = WHILE_LOOP
 
-    def execute(self):
-        while self.evaluator(self.expr, context=self.context):
-            executor_response = self.executor(self.code, context=self.context)
+    def execute(self, context):
+        while self.evaluator(self.expr, context=context):
+            executor_response = self.executor(self.code, context=context)
 
             if executor_response is not None:
                 if executor_response.type == RETURN_STATEMENT:
@@ -306,25 +315,24 @@ class WhileLoop:
 
 
 class VarAssign:
-    def __init__(self, context, evaluator, name, value):
+    def __init__(self, evaluator, name, value):
         if value.type == MATHEXPR:
             value = value.value
 
-        self.context = context
         self.evaluator = evaluator
         self.name = name
         self.value = value
 
         self.type = self.primary_type = VARASSIGN
 
-    def execute(self):
+    def execute(self, context):
         value = self.value
 
         if not isinstance(value, list):
             value = [value]
 
-        value = self.evaluator(value, context=self.context)
-        self.context[self.name] = value
+        value = self.evaluator(value, context=context)
+        context[self.name] = value
 
     def __str__(self):
         return f'VarAssign(name={repr(self.name)}, value={repr(self.value)})'
@@ -333,17 +341,16 @@ class VarAssign:
 
 
 class ReturnStatement:
-    def __init__(self, context, evaluator, value):
-        self.context = context
+    def __init__(self, evaluator, value):
         self.evaluator = evaluator
         self.value = value
 
         self.type = self.primary_type = RETURN_STATEMENT
         self.value_already_executed = False
 
-    def execute_value(self):
+    def execute_value(self, context):
         if not self.value_already_executed:
-            self.value = self.evaluator(self.value, context=self.context)
+            self.value = self.evaluator(self.value, context=context)
             self.value_already_executed = True
 
         return self.value

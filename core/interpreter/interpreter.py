@@ -1,5 +1,5 @@
+from os import chdir
 from sys import exit
-from os import listdir, chdir
 
 from lily.core.lexer.lexer import Lexer
 from lily.core.semantic import semantic
@@ -8,7 +8,7 @@ from lily.core.utils.contexts import main_context, Context
 from lily.core.utils.tools import process_escape_characters
 from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
                                         CONTINUE_STATEMENT, BREAK_STATEMENT,
-                                        IMPORT_STATEMENT, FUNCASSIGN)
+                                        IMPORT_STATEMENT)
 
 
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)
@@ -35,7 +35,7 @@ def executor(tokens, context=None):
     """
 
     if context is None:
-        context = {}
+        context = Context()
 
     for token in tokens:
         if token.type == IMPORT_STATEMENT:
@@ -45,11 +45,11 @@ def executor(tokens, context=None):
             evaluate(token.clone().value, context=context)
         elif token.type in EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES:
             if token.type == RETURN_STATEMENT:
-                token.execute_value()
+                token.execute_value(context)
 
             return token
         else:
-            result = token.execute()
+            result = token.execute(context)
 
             if hasattr(result, 'type') and result.type in EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES:
                 return result

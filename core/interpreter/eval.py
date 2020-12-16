@@ -52,7 +52,7 @@ def get_op(tokens):
 def evaluate_op(op, context):
     if hasattr(op[0], 'type') and op[0].type == FCALL:
         func = op[0]
-        function_response = func.execute()
+        function_response = func.execute(context)
         new_token_type = pytypes2lotus.get(type(function_response), CLASSINSTANCE)
         response_token = BasicToken(context, new_token_type, function_response, unary=func.unary)
 

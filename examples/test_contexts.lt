@@ -1,0 +1,17 @@
+a = 10
+
+
+func my_func() {
+    a = 5
+}
+
+func my_another_func() {
+    global.a = 15
+}
+
+
+print(a)
+my_func()
+print(a)
+my_another_func()
+print(a)

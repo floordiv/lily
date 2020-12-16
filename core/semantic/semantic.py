@@ -111,7 +111,7 @@ def startswith(tokens):
     return None, None
 
 
-def branches_leaves_to_branches_trees(context, executor, evaluator, tokens):
+def branches_leaves_to_branches_trees(executor, evaluator, tokens):
     temp_branch = None
     output_tokens = []
 
@@ -121,7 +121,7 @@ def branches_leaves_to_branches_trees(context, executor, evaluator, tokens):
                 if token.type != IF_BLOCK:
                     raise SyntaxError('Found elif/else statement, but no if statements found')
 
-                temp_branch = Branch(context, executor, evaluator, token)
+                temp_branch = Branch(executor, evaluator, token)
             else:
                 if temp_branch.type == ELIF_BLOCK:
                     temp_branch.elif_exprs.append(token)
@@ -168,4 +168,4 @@ def parse(context, executor, evaluator, tokens):
         token = BasicToken(context, MATHEXPR, temp_math_expr_tokens)
         output_tokens.append(token)
 
-    return branches_leaves_to_branches_trees(context, executor, evaluator, output_tokens)
+    return branches_leaves_to_branches_trees(executor, evaluator, output_tokens)

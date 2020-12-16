@@ -12,8 +12,15 @@ class Context:
         return self.get(item)
 
     def __setitem__(self, key, value):
+        # print('Setting', key, 'to value', value, 'in context', self)
+
         *split_key, last_var = key.split('.')
-        variables = self.variables
+
+        if split_key and split_key[0] == 'global':
+            split_key = split_key[1:]
+            variables = main_context.variables
+        else:
+            variables = self.variables
 
         for key_element in split_key:
             if key_element not in variables:
@@ -28,23 +35,47 @@ class Context:
 
         variables[last_var] = value
 
-    def get(self, key, value_instead=None):
+    def get(self, key):
         first_varpath_element, *varpath = key.split('.')
-        value = self.variables[first_varpath_element]
+
+        if first_varpath_element not in self.variables:
+            variables = main_context.variables
+        elif first_varpath_element == 'global':
+            variables = main_context.variables
+            first_varpath_element, *varpath = varpath
+        else:
+            variables = self.variables
 
         try:
-            for var in varpath:
-                if hasattr(value, 'type'):
-                    value = value.context
+            value = variables[first_varpath_element]
+        except KeyError:
+            print(key, variables, '<- lol')
+            raise KeyError
 
-                value = value.get(var)
-        except AttributeError:
-            return value_instead
+        for var in varpath:
+            if hasattr(value, 'type'):
+                value = value.context
+
+            value = value.get(var)
 
         return value
 
     def items(self):
         return self.variables.items()
+
+    def copy(self):
+        return Context(init_vars=self.variables.copy())
+
+    def __instancecheck__(self, instance):
+        """
+        isinstance(ParentContext, ChildrenContext) - shows whether ParentContext contains ChildrenContext
+        """
+
+        for value in self.variables.values():
+            if instance is value:
+                return True
+
+        return False
 
     def __str__(self):
         return f'Context({self.variables})'
@@ -53,3 +84,13 @@ class Context:
 
 
 main_context = Context()
+
+
+def get_var(contexts, key):
+    for context in contexts:
+        try:
+            return context, context[key]
+        except KeyError:
+            continue
+    else:
+        raise KeyError(str(key) + ': not found')

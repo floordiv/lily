@@ -22,10 +22,11 @@ def test_all(examples_dir='./examples/', exclude=None):
             continue
 
         print(splitline)
+        print(example, '\n')
 
         with open(examples_dir + example) as example_fd:
             response = interpret(example_fd.read(), exit_after_execution=False)
-            print(example, f'(exit-code: {response})')
+            print('\n * exit-code:', response)
 
     print(splitline)
 
