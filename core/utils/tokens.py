@@ -202,6 +202,9 @@ class ClassInstance:
     def extend_all_functions_with_cls_arg(self):
         for token in self.body:
             if token.type == FUNCASSIGN:
+                if not token.args:
+                    raise SyntaxError('class method does not contains cls-method')
+
                 token.extend_args = (self,)
 
     def __str__(self):

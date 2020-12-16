@@ -1,0 +1,21 @@
+func func_that_contains_class() {
+    class global.ContainedClass {
+        func __init__(cls, a, b) {
+            cls.a = a
+            cls.b = b
+            cls.sum = null
+        }
+
+        func sum_all(cls) {
+            cls.sum = cls.a + cls.b
+        }
+    }
+
+    my_contained_class = ContainedClass(1, 2)
+    my_contained_class.sum_all()
+
+    print(my_contained_class.a, '+', my_contained_class.b, '=', my_contained_class.sum)
+}
+
+func_that_contains_class()
+print(ContainedClass)   # it will raise an error

@@ -1,2 +1,19 @@
 some.lol = 5
 print(some)
+
+
+# test a feature with assigning class in one scope
+# but declaring in another
+
+class FirstClass {}
+
+
+class FirstClass.MyClass {   # declare class MyClass in FirstClass
+    func hello_world(cls) {
+        print('hello, world!')
+    }
+}
+
+
+my_class_in_first_class = FirstClass.MyClass()
+my_class_in_first_class.hello_world()

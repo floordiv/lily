@@ -218,10 +218,12 @@ class Lexer:
             else:
                 output.append(token)
 
-        return output + temp
+        if temp:
+            raise SyntaxError('unclosed braces')
+
+        return output
 
 
-# lexer = Lexer("(pi+1)*(pi+2)")
-# lexer = Lexer('hello.world')
+# lexer = Lexer("class FirstClass.MyClass { func hello_world() { print('hello, world!') } }")
 # lexemes = lexer.parse()
 # print(lexemes)

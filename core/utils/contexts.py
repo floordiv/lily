@@ -46,11 +46,7 @@ class Context:
         else:
             variables = self.variables
 
-        try:
-            value = variables[first_varpath_element]
-        except KeyError:
-            print(key, variables, '<- lol')
-            raise KeyError
+        value = variables[first_varpath_element]
 
         for var in varpath:
             if hasattr(value, 'type'):

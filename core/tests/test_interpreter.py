@@ -35,5 +35,5 @@ if __name__ == '__main__':
     chdir('../..')
 
 
-# interpret(load_example('classes'))
-test_all(exclude=['simple_program_demo.lt'])
+interpret(load_example('lolwhat'))
+# test_all(exclude=['simple_program_demo.lt'])
