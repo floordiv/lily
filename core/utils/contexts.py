@@ -84,13 +84,3 @@ class Context:
 
 
 main_context = Context()
-
-
-def get_var(contexts, key):
-    for context in contexts:
-        try:
-            return context, context[key]
-        except KeyError:
-            continue
-    else:
-        raise KeyError(str(key) + ': not found')
