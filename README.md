@@ -5,6 +5,8 @@ Generally, Lotus - is my own compilation of wishes about Python. Lily is an ethe
 
 What about future plans - I wanna write a llvm-compiler for Lotus. But it will not be soon.
 
+New features: added scopes. What I mean? previously, I had only 1 context for all the objects. This branch contains a version, which fixes that shit, so functions and classes has different and independent scopes
+
 
 ---
 ## So, short documentation:
