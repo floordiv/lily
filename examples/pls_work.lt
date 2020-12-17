@@ -11,11 +11,11 @@ func func_that_contains_class() {
         }
     }
 
-    my_contained_class = ContainedClass(1, 2)
+    my_contained_class = ContainedClass(1, 2)   # ContainedClass will be taken from global scope
     my_contained_class.sum_all()
 
     print(my_contained_class.a, '+', my_contained_class.b, '=', my_contained_class.sum)
 }
 
 func_that_contains_class()
-print(ContainedClass)   # it will raise an error
+print(ContainedClass)   # it will work

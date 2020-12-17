@@ -54,7 +54,6 @@ class FunctionCall:
 
     def execute(self, context):
         func = context[self.name]
-
         args = []
         kwargs = {}
 

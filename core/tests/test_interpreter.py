@@ -35,5 +35,5 @@ if __name__ == '__main__':
     chdir('../..')
 
 
-interpret(load_example('lolwhat'))
+interpret(load_example('pyimport'))
 # test_all(exclude=['simple_program_demo.lt'])
