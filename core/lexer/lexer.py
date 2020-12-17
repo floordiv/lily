@@ -45,7 +45,6 @@ class Lexer:
 
         output_tokens = [tokens.BasicToken(context, tokentypes.NO_TYPE, '')]
         skip_iters = 0
-        dot = operators.characters['.']
 
         for index, letter in enumerate(code):
             if skip_iters:
@@ -85,13 +84,12 @@ class Lexer:
 
                 output_tokens[-1].value += letter
 
+        if output_tokens[-1].value == '':
+            output_tokens.pop()
+
         self.provide_token_type(output_tokens[-1])
         parsed_but_no_unary = self.parse_braces(context, output_tokens)
-
         final = self.parse_unary(parsed_but_no_unary)
-
-        if final[-1].value == '':
-            final.pop()
 
         return final
 
@@ -121,7 +119,10 @@ class Lexer:
             token.type = token.primary_type = tokentypes.FLOAT
             token.value = float(token.value)
         elif token.type == tokentypes.NO_TYPE:
-            token.type = token.primary_type = tokentypes.VARIABLE
+            if token.value in keywords.keywords:
+                token.type = token.primary_type = keywords.keywords[token.value]
+            else:
+                token.type = token.primary_type = tokentypes.VARIABLE
         elif token.primary_type == tokentypes.OPERATOR:
             if token.value in priorities.for_tokens:
                 token.priority = priorities.for_tokens[token.value]
