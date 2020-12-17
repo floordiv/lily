@@ -51,7 +51,7 @@ class Context:
         for var in varpath:
             if hasattr(value, 'type'):
                 value = value.context
-            elif hasattr(value, '__dict__'):    # to support python calls
+            elif hasattr(value, '__dict__') and not isinstance(value, Context):    # to support python calls
                 value = Context(init_vars={var: getattr(value, var) for var in dir(value)})
 
             value = value[var]
