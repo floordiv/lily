@@ -139,3 +139,14 @@ print(my_class.get_sum())  # output: 3
 cls: class instance (can be named, as you want. `self`, for example, or `this`)
 
 Actually, in theory, classes also supports all the python's operators overloading. But I haven't tested it yet
+---
+Built-in Python objects' bindings:
+```
+print(*args, end='\n', sep=' ') - text output
+input(string) - text input
+true - True (will be changed soon)
+false - False (will be changed soon)
+null - None
+getattr, setattr, hasattr - see in python docs*
+pyimport(python_like_path) - bind to the importlib.import_module
+```
