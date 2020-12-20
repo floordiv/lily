@@ -1,4 +1,5 @@
 from lily.lib.std.bindings import pybindings
+from lily.core.utils.tokentypes import LIST, DICT
 
 
 class Context:
@@ -49,7 +50,7 @@ class Context:
         value = variables[first_varpath_element]
 
         for var in varpath:
-            if hasattr(value, 'type'):
+            if hasattr(value, 'type') and value.type not in (LIST, DICT):
                 value = value.context
             elif hasattr(value, '__dict__') and not isinstance(value, Context):    # to support python calls
                 value = Context(init_vars={var: getattr(value, var) for var in dir(value)})

@@ -2,8 +2,8 @@ from lily.core.utils.operators import executors
 from lily.core.utils.tokens import BasicToken
 from lily.core.utils.tokentypes import (OPERATOR, FCALL,
                                         PARENTHESIS, VARIABLE,
-                                        NO_TYPE, pytypes2lotus,
-                                        CLASSINSTANCE)
+                                        pytypes2lotus, CLASSINSTANCE,
+                                        LIST, DICT)
 
 
 def evaluate(tokens, context: dict = None, return_token=False):
@@ -24,10 +24,12 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
         stack[op_start:op_end] = [result]
 
-    if return_token:
-        return stack[0]
+    unpack_stack = stack[0]
 
-    return stack[0].value
+    if return_token or unpack_stack.type in (LIST, DICT):
+        return unpack_stack
+
+    return unpack_stack.value
 
 
 def get_op(tokens):

@@ -8,17 +8,18 @@ from lily.core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
                                       FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
                                       BREAK_KEYWORD, CONTINUE_KEYWORD,
                                       IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD)
-from lily.core.utils.tokentypes import (VARIABLE, OPERATOR, PARENTHESIS,
-                                        BRACES, FBRACES, ANY, NEWLINE,
-                                        MATHEXPR, IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
-                                        IMPORT_STATEMENT, STRING)
+from lily.core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
+                                        FBRACES, ANY, NEWLINE,
+                                        MATHEXPR, IF_BLOCK, ELIF_BLOCK,
+                                        ELSE_BLOCK, STRING, LIST, DICT)
 from lily.core.utils.operators import characters
 from lily.core.utils.tools import get_token_index
 from lily.core.semantic.parsers import (if_elif_branch, else_branch,
                                         function_call, function_assign,
                                         for_loop, while_loop, var_assign,
                                         return_token, break_token, continue_token,
-                                        import_statement, class_assign)
+                                        import_statement, class_assign,
+                                        parse_list, parse_dict)
 
 
 class MatchToken:
@@ -72,6 +73,10 @@ parsers = {
     ContinueStatement: continue_token,
     ImportStatement: import_statement,
     Class: class_assign,
+}
+token_types_parsers = {
+    LIST: parse_list,
+    DICT: parse_dict,
 }
 
 
@@ -140,7 +145,7 @@ def branches_leaves_to_branches_trees(executor, evaluator, tokens):
 
 
 def parse(context, executor, evaluator, tokens):
-    temp = tokens[:]
+    temp = parse_tokens(context, executor, evaluator, tokens=tokens[:])
     temp_math_expr_tokens = []
     output_tokens = []
 
@@ -169,3 +174,16 @@ def parse(context, executor, evaluator, tokens):
         output_tokens.append(token)
 
     return branches_leaves_to_branches_trees(executor, evaluator, output_tokens)
+
+
+def parse_tokens(*args, tokens):
+    return list(map(lambda token: parse_token(*args, token), tokens))
+
+
+def parse_token(context, executor, evaluator, token):
+    if token.type in token_types_parsers:
+        token_parser = token_types_parsers[token.type]
+
+        return token_parser(executor, evaluator, context, parse, token)
+
+    return token

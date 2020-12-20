@@ -2,7 +2,8 @@ from itertools import chain
 from re import finditer
 
 from lily.core.utils.tokentypes import (NEWLINE, VARIABLE,
-                                        MATHEXPR, pytypes2lotus)
+                                        MATHEXPR, COMMA,
+                                        pytypes2lotus)
 from lily.core.utils.operators import characters
 from lily.core.utils.tokens import BasicToken
 
@@ -41,7 +42,7 @@ def parse_func_args(context, args_tokens, leave_tokens=True):
     kwargs = {}
     get_value = lambda token: token if leave_tokens else token.value
 
-    for tokens in split_tokens(args_tokens.value, 'COMMA'):
+    for tokens in split_tokens(args_tokens.value, COMMA):
         if len(tokens) == 3 and tokens[1].type == characters['=']:
             var, _, val = tokens
             kwargs[var.value] = get_value(val)
@@ -99,10 +100,13 @@ def group_by_pairs(lst):
 
 
 def split_tokens(tokens, splitby=(NEWLINE,)):
+    if not isinstance(splitby, (list, tuple)):
+        splitby = (splitby,)
+
     split_tokens_result = [[]]
 
     for token in tokens:
-        if token.type in splitby or token.primary_type and token.primary_type in splitby:
+        if token.type in splitby or token.primary_type in splitby:
             split_tokens_result.append([])
             continue
 
@@ -139,3 +143,7 @@ def get_token_index(list_, token_type):
 def readfile(path):
     with open(path) as fd:
         return fd.read()
+
+
+def contains(source, token_type):
+    return bool([token for token in source if token_type in (token.type, token.primary_type)])

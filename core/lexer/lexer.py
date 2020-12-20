@@ -1,3 +1,4 @@
+from lily.core.lexer import datatypes
 from lily.core.utils import (keywords, tokentypes,
                              operators, tokens,
                              tools, priorities)
@@ -91,7 +92,7 @@ class Lexer:
         parsed_but_no_unary = self.parse_braces(context, output_tokens)
         final = self.parse_unary(parsed_but_no_unary)
 
-        return final
+        return list(map(datatypes.process_token, final))
 
     def append(self, lst: list, item: any):
         if lst[-1].type == tokentypes.NO_TYPE and lst[-1].value == '':

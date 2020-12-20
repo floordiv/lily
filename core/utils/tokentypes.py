@@ -1,3 +1,6 @@
+from lily.core.utils.operators import characters
+
+
 # built-in data types
 VARIABLE = 'VARIABLE'
 INTEGER = 'INTEGER'
@@ -31,6 +34,8 @@ NO_TYPE = 'NO_TYPE'
 OPERATOR = 'OPERATOR'
 NEWLINE = 'NEWLINE'
 SEMICOLON = 'SEMICOLON'
+COMMA = characters[',']
+COLON = characters[':']
 
 PARENTHESIS = 'PARENTHESIS'  # used for token primary-type
 BRACES = 'BRACES'    # ()

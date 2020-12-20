@@ -1,5 +1,10 @@
 from lily.core.utils.tools import parse_func_args, split_tokens, process_token
-from lily.core.utils.tokentypes import SEMICOLON, MATHEXPR, PARENTHESIS
+from lily.core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
+                                        LIST, DICT)
+from lily.core.utils.datatypes_classes import List
+
+
+TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
 
 
 def function_call(executor, evaluator, context, semantic_parser, tokens):
@@ -89,12 +94,44 @@ def _parse_args(context, executor, evaluator, args, parse_semantic):
     output = []
 
     for arg in args:
-        if arg.type == MATHEXPR:
+        if arg.type in TOKEN_TYPES_FOR_SEMANTIC_ANALYZE:
+
             if len(arg.value) == 0:
                 continue
 
-            arg = parse_semantic(context, executor, evaluator, arg.value)[0]
+            arg = parse_semantic(context, executor, evaluator, arg.value if arg.type == MATHEXPR else [arg])[0]
 
         output.append(arg)
 
     return output
+
+
+# data types parsers
+
+def parse_list(executor, evaluator, context, semantic_parser, token):
+    if isinstance(token, List):  # already parsed
+        return token
+
+    for index, value in enumerate(token.value):
+        parsed_value = semantic_parser(context, executor, evaluator, value)[0]
+
+        if parsed_value.type == MATHEXPR:
+            parsed_value = parsed_value.value[0]
+
+        token.value[index] = parsed_value
+
+    return List(token)
+
+
+def parse_dict(executor, evaluator, context, semantic_parser, token):
+    cooked_dict = {}
+
+    for key, value in token.value.items():
+        parsed_value = semantic_parser(context, executor, evaluator, value)
+
+        if parsed_value.type == MATHEXPR:
+            parsed_value = parsed_value.value[0]
+
+        cooked_dict[key] = parsed_value
+
+    token.value = cooked_dict

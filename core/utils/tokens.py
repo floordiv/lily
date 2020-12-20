@@ -31,6 +31,17 @@ class BasicToken:
 
         return token
 
+    def as_json(self):
+        return {
+            'context': self.context,
+            'type': self.type,
+            'primary_type': self.primary_type,
+            'value': self.value,
+            'unary': self.unary,
+            'priority': self.priority,
+            'exclam': self.exclam
+        }
+
     def __str__(self):
         try:
             value = int(self.unary + str(self.value)) if self.unary != '+' else self.value
