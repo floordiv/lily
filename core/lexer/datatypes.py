@@ -15,7 +15,10 @@ Actually, I'm trying to implement data types for the 5th time. I hope, it'll wor
 
 def parse_list(token):
     token.type = token.primary_type = LIST
-    token.value = split_tokens(token.value, COMMA)
+    split_by_comma = split_tokens(token.value, COMMA)
+
+    if not (len(split_by_comma) == 1 and split_by_comma[0] == []):
+        token.value = split_by_comma
 
     return token
 
