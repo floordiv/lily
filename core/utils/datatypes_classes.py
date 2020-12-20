@@ -2,10 +2,6 @@ from lily.core.utils.tokentypes import LIST, DICT
 from lily.core.utils.tools import create_token
 
 
-class DefaultBehaviour:
-    ...
-
-
 class List:
     def __init__(self, token):
         self.token = token
