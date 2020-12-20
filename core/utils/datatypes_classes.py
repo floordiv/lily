@@ -1,4 +1,5 @@
 from lily.core.utils.tokentypes import LIST, DICT
+from lily.core.utils.tools import create_token
 
 
 class DefaultBehaviour:
@@ -10,7 +11,7 @@ class List:
         self.token = token
         self.type = self.primary_type = LIST
         self.value = token.value
-        self.parsed = True
+        self.context = token.context
 
         for key, value in token.as_json().items():
             if hasattr(self, key):
@@ -26,7 +27,7 @@ class List:
 
     def add(self, item):
         cloned = self.token.clone()
-        cloned.value.append(item)
+        cloned.value.append(create_token(self.context, item))
         this_list_copy = List(cloned)
 
         return this_list_copy

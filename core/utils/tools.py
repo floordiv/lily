@@ -3,7 +3,7 @@ from re import finditer
 
 from lily.core.utils.tokentypes import (NEWLINE, VARIABLE,
                                         MATHEXPR, COMMA,
-                                        pytypes2lotus)
+                                        pytypes2lotus, CLASSINSTANCE)
 from lily.core.utils.operators import characters
 from lily.core.utils.tokens import BasicToken
 
@@ -147,3 +147,7 @@ def readfile(path):
 
 def contains(source, token_type):
     return bool([token for token in source if token_type in (token.type, token.primary_type)])
+
+
+def create_token(context, value):
+    return BasicToken(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
