@@ -33,7 +33,7 @@ class List:
         return this_list_copy
 
     def append(self, item):
-        self.value.append(item)
+        self.value.append(create_token(self.context, item))
 
     def __str__(self):
         return f'[{", ".join(str(token.value) for token in self.value)}]'
