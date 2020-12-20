@@ -22,14 +22,33 @@ class List:
         return self.value[index]
 
     def add(self, item):
+        if not isinstance(item, List):
+            raise TypeError('only list can be concatenated to list')
+
         cloned = self.token.clone()
-        cloned.value.append(create_token(self.context, item))
+        cloned.value.extend(item.value)
         this_list_copy = List(cloned)
 
         return this_list_copy
 
-    def append(self, item):
-        self.value.append(create_token(self.context, item))
+    def append(self, *items):
+        extend_by = []
+
+        for item in items:
+            extend_by.append(create_token(self.context, item))
+
+        self.value.extend(extend_by)
+
+    def extend(self, *items):
+        extend_by = []
+
+        for item in items:
+            if not hasattr(item, 'type') or item.type not in (LIST,):
+                raise TypeError('list can be extended only by list or tuple')
+
+            extend_by.extend(item.value)
+
+        self.value.extend(extend_by)
 
     def __str__(self):
         return f'[{", ".join(str(token.value) for token in self.value)}]'
