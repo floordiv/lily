@@ -1,4 +1,4 @@
-from lily.core.utils.tokentypes import LIST, DICT
+from lily.core.utils.tokentypes import LIST, DICT, INTEGER
 from lily.core.utils.tools import create_token
 from lily.core.utils.tokens import BasicToken
 
@@ -98,6 +98,76 @@ class _Dict:
 class Dict(_Dict):
     def __init__(self, token):
         super(Dict, self).__init__(token.context, token.value)
+
+        for key, value in token.as_json().items():
+            if hasattr(self, key):
+                continue    # instead of re-writing declared attributes above
+
+            setattr(self, key, value)
+
+
+class _Integer:
+    def __init__(self, value):
+        self.type = self.primary_type = INTEGER
+        self.value = value
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __ne__(self, other):
+        return self.value != other
+
+    def __le__(self, other):
+        return self.value <= other
+
+    def __ge__(self, other):
+        return self.value >= other
+
+    def __add__(self, other):
+        return self.value + other
+
+    def __sub__(self, other):
+        return self.value - other
+
+    def __mul__(self, other):
+        return self.value * other
+
+    def __divmod__(self, other):
+        return self.value / other
+
+    def __floordiv__(self, other):
+        return self.value // other
+
+    def __pow__(self, power, modulo=None):
+        return self.value ** power
+
+    def __and__(self, other):
+        return self.value & other
+
+    def __or__(self, other):
+        return self.value | other
+
+    def __rshift__(self, other):
+        return self.value >> other
+
+    def __lshift__(self, other):
+        return self.value << other
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __str__(self):
+        return 'str(self.value)'
+
+    __repr__ = __str__
+
+
+class Integer(_Integer):
+    def __init__(self, token):
+        if not isinstance(token.value, int):
+            token.value = int(token.value)
+
+        super(Integer, self).__init__(token.value)
 
         for key, value in token.as_json().items():
             if hasattr(self, key):
