@@ -1,12 +1,15 @@
 from copy import deepcopy
+from typing import Any
 
 from lily.core.utils.contexts import Context
+from lily.core.utils.tools import split_tokens
 from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         FUNCASSIGN, VARASSIGN, FCALL,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
-                                        CODE, RETURN_STATEMENT, BREAK_STATEMENT,
+                                        BRACES, RETURN_STATEMENT, BREAK_STATEMENT,
                                         CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
-                                        IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE)
+                                        IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
+                                        COMMA, LIST, DICT)
 
 
 class BasicToken:
@@ -334,18 +337,44 @@ class VarAssign:
 
         self.evaluator = evaluator
         self.name = name
-        self.value = value
+        self.value: Any = value
 
         self.type = self.primary_type = VARASSIGN
 
     def execute(self, context):
-        value = self.value
+        if not isinstance(self.value, list):
+            self.value = [self.value]
 
-        if not isinstance(value, list):
-            value = [value]
+        names = self.name
 
-        value = self.evaluator(value, context=context)
-        context[self.name] = value
+        if names.type == BRACES:
+            names = [token.value for token in names.value if token.type != COMMA]
+            value = self.get_processed_value(context)
+        else:
+            names = [names.value]
+            value = self.value
+
+        if hasattr(value, 'type') and value.type == LIST:
+            value = value.value
+        else:
+            value = split_tokens(value, COMMA)
+
+        for var, val in zip(names, value):
+            if not isinstance(val, list):
+                val = [val]
+
+            self.assign(context, var, self.evaluator(val, context))
+
+    def assign(self, context, name, value):
+        context[name] = value
+
+    def get_processed_value(self, context):
+        value: Any = self.value[0]
+
+        if hasattr(value, 'execute'):
+            return value.execute(context)
+
+        return value.value
 
     def __str__(self):
         return f'VarAssign(name={repr(self.name)}, value={repr(self.value)})'
