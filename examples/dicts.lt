@@ -1,0 +1,17 @@
+my_dict = {
+    'one': 1,
+    'two': 2,
+    'three': 3
+}
+
+string = 'one'
+print(my_dict.get(string))
+#print(my_dict.get('four'))
+print(my_dict.contains('one'))
+
+dict_items = my_dict.items()
+
+for (i=0; i<dict_items.length; i=i+1) {
+    (key, value) = dict_items.get(i)
+    print(key, ': ', value, sep='')
+}
