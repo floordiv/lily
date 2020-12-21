@@ -2,7 +2,7 @@ a = [1, 2, 3]
 b = []
 
 print(a.contains(1))
-print(a.add([4]))
+print(a + [4])
 
 b.append(4, 5)
 b.extend([6])
