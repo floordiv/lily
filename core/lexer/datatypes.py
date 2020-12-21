@@ -36,16 +36,9 @@ def parse_dict(token):
     return token
 
 
-def parse_int(token):
-    token.value = int(token.value)
-
-    return token
-
-
 token_types_parsers = {
     parse_list: (QBRACES, PARENTHESIS, lambda token: True),
     parse_dict: (FBRACES, PARENTHESIS, lambda token: contains(token.value, COLON)),  # shit code, rewrite it later
-    parse_int: (INTEGER, INTEGER, lambda token: True),
 }
 
 
