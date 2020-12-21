@@ -32,7 +32,7 @@ class MatchToken:
         self.value = value
 
     def match(self, another_token):
-        if another_token.primary_type in self.primary_types:
+        if another_token.primary_type in self.primary_types and ANY in self.types:
             return True
 
         return ANY in self.types or another_token.type in self.types or another_token.value == self.value
@@ -45,7 +45,7 @@ constructions = {
     Function: (MatchToken(FUNCASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES,
                                                                                                                                primary_types=PARENTHESIS)),
     Class: (MatchToken(CLASSASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(FBRACES, primary_types=PARENTHESIS)),
-    VarAssign: (MatchToken(VARIABLE), MatchToken(characters['=']), MatchToken(ANY)),
+    VarAssign: (MatchToken(VARIABLE, BRACES), MatchToken(characters['=']), MatchToken(ANY)),
     ForLoop: (MatchToken(FOR_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
     WhileLoop: (MatchToken(WHILE_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
     IfBranchLeaf: (MatchToken(IF_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
