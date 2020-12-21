@@ -1,0 +1,4 @@
+module = pyimport('time')
+
+sleep = module.sleep
+time = module.time
