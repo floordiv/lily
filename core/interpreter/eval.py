@@ -55,6 +55,10 @@ def evaluate_op(op, context):
     if hasattr(op[0], 'type') and op[0].type == FCALL:
         func = op[0]
         function_response = func.execute(context)
+
+        if hasattr(function_response, 'type') and function_response.type in (DICT, LIST):
+            return function_response
+
         new_token_type = pytypes2lotus.get(type(function_response), CLASSINSTANCE)
         response_token = BasicToken(context, new_token_type, function_response, unary=func.unary)
 
@@ -63,13 +67,8 @@ def evaluate_op(op, context):
         return process_token(op[0], context)
 
     left, op, right = op
-    left, right = process_token(left, context), process_token(right, context)
-
-    if isinstance(left, BasicToken):
-        left = left.value
-    if isinstance(right, BasicToken):
-        right = right.value
-
+    left = process_token(left, context).value
+    right = process_token(right, context).value
     executor = executors[op.value]
     result = executor(left, right)
     result_token = BasicToken(context, pytypes2lotus[type(result)], result)
@@ -83,7 +82,6 @@ def process_token(token, context):
 
         if isinstance(value, BasicToken):
             process_token_exclam(value)
-            value = value.value
         else:
             value = BasicToken(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
             value.exclam = token.exclam
