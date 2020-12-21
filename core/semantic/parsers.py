@@ -1,7 +1,8 @@
 from lily.core.utils.tools import parse_func_args, split_tokens, process_token
 from lily.core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
-                                        LIST, DICT)
-from lily.core.utils.datatypes_classes import List
+                                        LIST, DICT, BRACES)
+from lily.core.utils.datatypes_classes import List, Dict
+from lily.core.utils.tokens import BasicToken
 
 
 TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
@@ -9,7 +10,7 @@ TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
 
 def function_call(executor, evaluator, context, semantic_parser, tokens):
     name, args_kwargs = tokens
-    args, kwargs = parse_func_args(context, args_kwargs, leave_tokens=True)
+    args, kwargs = parse_func_args(context, args_kwargs, BasicToken, leave_tokens=True)
     args = _parse_args(context, executor, evaluator, args, semantic_parser)
 
     return evaluator, name.value, args, kwargs, name.unary
@@ -17,7 +18,7 @@ def function_call(executor, evaluator, context, semantic_parser, tokens):
 
 def function_assign(executor, evaluator, context, semantic_parser, tokens):
     _, name, args_kwargs, code = tokens
-    args, kwargs = parse_func_args(context, args_kwargs, leave_tokens=True)
+    args, kwargs = parse_func_args(context, args_kwargs, BasicToken, leave_tokens=True)
 
     if args[0].type == MATHEXPR:
         args = []
@@ -62,7 +63,7 @@ def var_assign(executor, evaluator, context, semantic_parser, tokens):
     name, _, *value = tokens
     value = semantic_parser(context, executor, evaluator, value)
 
-    return evaluator, name.value, value[0]
+    return evaluator, name, value[0]
 
 
 def return_token(executor, evaluator, context, semantic_parser, tokens):
@@ -124,14 +125,20 @@ def parse_list(executor, evaluator, context, semantic_parser, token):
 
 
 def parse_dict(executor, evaluator, context, semantic_parser, token):
+    if isinstance(token, Dict):
+        return token    # dict already parsed
+
     cooked_dict = {}
 
     for key, value in token.value.items():
-        parsed_value = semantic_parser(context, executor, evaluator, value)
+        parsed_value = semantic_parser(context, executor, evaluator, [value])[0]
 
         if parsed_value.type == MATHEXPR:
             parsed_value = parsed_value.value[0]
 
-        cooked_dict[key] = parsed_value
+        key, value = evaluator([key], context=context), evaluator([parsed_value], context=context)
+        cooked_dict[key] = value
 
     token.value = cooked_dict
+
+    return Dict(token)
