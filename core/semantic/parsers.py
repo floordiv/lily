@@ -1,7 +1,7 @@
 from lily.core.utils.tools import parse_func_args, split_tokens, process_token
 from lily.core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
                                         LIST, DICT, BRACES)
-from lily.core.utils.datatypes_classes import List, Dict
+from lily.core.utils.datatypes_classes import List, Dict, Integer
 from lily.core.utils.tokens import BasicToken
 
 
@@ -142,3 +142,7 @@ def parse_dict(executor, evaluator, context, semantic_parser, token):
     token.value = cooked_dict
 
     return Dict(token)
+
+
+def parse_int(executor, evaluator, context, semantic_parser, token):
+    return Integer(token)
