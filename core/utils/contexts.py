@@ -13,8 +13,6 @@ class Context:
         return self.get(item)
 
     def __setitem__(self, key, value):
-        # print('Setting', key, 'to value', value, 'in context', self)
-
         *split_key, last_var = key.split('.')
 
         if split_key and split_key[0] == 'global':
