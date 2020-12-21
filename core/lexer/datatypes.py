@@ -1,7 +1,7 @@
 from lily.core.utils.tools import split_tokens, contains
 from lily.core.utils.tokentypes import (COMMA, COLON, LIST,
                                         DICT, QBRACES, FBRACES,
-                                        PARENTHESIS)
+                                        PARENTHESIS, NEWLINE)
 
 
 """
@@ -25,7 +25,7 @@ def parse_list(token):
 
 def parse_dict(token):
     token.type = token.primary_type = DICT
-    key_value_pairs = split_tokens(token.value, COMMA)
+    key_value_pairs = split_tokens(token.value, COMMA, exclude=(NEWLINE,))
     raw_result = {}
 
     for key, _, value in key_value_pairs:
