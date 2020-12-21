@@ -3,9 +3,9 @@ from re import finditer
 
 from lily.core.utils.tokentypes import (NEWLINE, VARIABLE,
                                         MATHEXPR, COMMA,
-                                        pytypes2lotus, CLASSINSTANCE)
+                                        pytypes2lotus, CLASSINSTANCE,
+                                        LIST, DICT)
 from lily.core.utils.operators import characters
-from lily.core.utils.tokens import BasicToken
 
 
 escape_characters = {
@@ -37,7 +37,7 @@ def isfloat(string):
         return False
 
 
-def parse_func_args(context, args_tokens, leave_tokens=True):
+def parse_func_args(context, args_tokens, basic_token, leave_tokens=True):
     args = []
     kwargs = {}
     get_value = lambda token: token if leave_tokens else token.value
@@ -49,7 +49,7 @@ def parse_func_args(context, args_tokens, leave_tokens=True):
         elif len(tokens) == 1:
             args.append(get_value(tokens[0]))
         else:
-            args.append(BasicToken(context, MATHEXPR, tokens))
+            args.append(basic_token(context, MATHEXPR, tokens))
 
     return args, kwargs
 
@@ -99,13 +99,16 @@ def group_by_pairs(lst):
     return result
 
 
-def split_tokens(tokens, splitby=(NEWLINE,)):
+def split_tokens(tokens, splitby=(NEWLINE,), exclude=()):
     if not isinstance(splitby, (list, tuple)):
         splitby = (splitby,)
 
     split_tokens_result = [[]]
 
     for token in tokens:
+        if token.type in exclude or token.primary_type in exclude:
+            continue
+
         if token.type in splitby or token.primary_type in splitby:
             split_tokens_result.append([])
             continue
@@ -149,5 +152,8 @@ def contains(source, token_type):
     return bool([token for token in source if token_type in (token.type, token.primary_type)])
 
 
-def create_token(context, value):
-    return BasicToken(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
+def create_token(context, basic_token, value):
+    if hasattr(value, 'type') and value.type in (LIST, DICT):
+        return value
+
+    return basic_token(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
