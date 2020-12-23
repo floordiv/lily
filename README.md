@@ -150,3 +150,38 @@ null - None
 getattr, setattr, hasattr - see in python docs*
 pyimport(python_like_path) - bind to the importlib.import_module
 ```
+---
+Lists:
+```
+my_list = [1, 2, 3]
+print(my_list + [4])  # output: [1, 2, 3, 4]
+my_list.append(4, 5)  # my_list now: [1, 2, 3, 4, 5]
+my_list.extend([6, 7], [8, 9])  # my_list now: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+print(my_list.contains(6))  # True
+print(my_list.get(5))       # get element with index 5. 6 will be printed
+print(my_list.length)       # returns 9, cause list contains 9 elements
+```
+---
+Dicts: 
+```
+my_dict = {
+  'one': 1,
+  'two': 2,
+  'three': 3
+}
+
+my_dict_items = my_dict.items()  # returns list, which contains lists [key, value]
+
+# prints smth like "one: 1"
+for (i=0; i<my_dict_items.length; i=i+1) {
+  (key, value) = my_dict_items[i]  # look at this! This is variable unpacking!
+  print(key, ': ', value, sep='')
+}
+```
+---
+Variables unpacking (showed in the example above):
+```
+my_list = [1, 2, 3]
+(one, two, three) = my_list
+```
+To unpack variables, you should write names in a braces. Works as in python, so, list should contain as much values, as variables you're declaring
