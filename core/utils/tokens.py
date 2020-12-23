@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Any
 
 from lily.core.utils.contexts import Context
-from lily.core.utils.tools import split_tokens
+from lily.core.utils.tools import split_tokens, create_token
 from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         FUNCASSIGN, VARASSIGN, FCALL,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
@@ -354,16 +354,24 @@ class VarAssign:
             names = [names.value]
             value = self.value
 
-        if hasattr(value, 'type') and value.type == LIST:
-            value = value.value
+        if hasattr(value, 'type'):
+            if value.type == LIST:
+                value = value.value
         else:
-            value = split_tokens(value, COMMA)
+            if not isinstance(value, (list, tuple)):
+                value = split_tokens(value, COMMA)
 
-        for var, val in zip(names, value):
-            if not isinstance(val, list):
-                val = [val]
+        if len(names) > 1:
+            for var, val in zip(names, value):
+                if not hasattr(val, 'type'):
+                    val = create_token(context, BasicToken, val)
 
-            self.assign(context, var, self.evaluator(val, context))
+                if not isinstance(val, list):
+                    val = [val]
+
+                self.assign(context, var, self.evaluator(val, context))
+        else:
+            self.assign(context, names[0], self.evaluator(value, context))
 
     def assign(self, context, name, value):
         context[name] = value
