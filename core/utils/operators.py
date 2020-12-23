@@ -69,6 +69,8 @@ characters = {
     '**=': 'DOUBLESTAREQUAL',
     '//': 'DOUBLESLASH',
     '//=': 'DOUBLESLASHEQUAL',
+    '===': 'IS',
+    '!==': 'NOTIS',
 
     '...': 'ELLIPSIS',
     '#': 'COMMENT',
