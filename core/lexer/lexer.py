@@ -68,7 +68,7 @@ class Lexer:
                 if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[-1].value + letter in operators.characters:
                     output_tokens[-1].value += letter
                 else:
-                    if letter == '.':
+                    if letter == '.' and output_tokens[-1].type != tokentypes.OPERATOR:
                         output_tokens[-1].value += '.'
                         continue
 
@@ -148,7 +148,7 @@ class Lexer:
 
                 output_tokens.append(token)
 
-        return output_tokens
+        return output_tokens + temp_signs
 
     def get_unary_token(self, token, signs):
         reversed_signs = signs[::-1]
@@ -225,7 +225,16 @@ class Lexer:
 
         return output
 
+    def process_dots(self, tokens_):
+        dot = operators.characters['.']
+        cooked = []
 
-# lexer = Lexer("class FirstClass.MyClass { func hello_world() { print('hello, world!') } }")
+        for index, token in enumerate(tokens_):
+            if token.type == dot:
+                if cooked[-1].value + '.' not in operators.characters:
+                    ...
+
+
+# lexer = Lexer("===")
 # lexemes = lexer.parse()
 # print(lexemes)
