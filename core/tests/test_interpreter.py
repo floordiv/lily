@@ -35,5 +35,5 @@ if __name__ == '__main__':
     chdir('../..')
 
 
-# interpret(load_example('dicts'))
+# interpret(load_example('lists'))
 test_all(exclude=['simple_program_demo.lt'])
