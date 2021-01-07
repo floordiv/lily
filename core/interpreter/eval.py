@@ -4,7 +4,7 @@ from core.utils.tools import create_token
 from core.utils.tokentypes import (OPERATOR, FCALL,
                                    PARENTHESIS, VARIABLE,
                                    pytypes2lotus, CLASSINSTANCE,
-                                   LIST, DICT, TUPLE)
+                                   LIST, DICT, TUPLE, MATHEXPR)
 
 
 def evaluate(tokens, context: dict = None, return_token=False):
@@ -15,6 +15,10 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
     if not all(hasattr(stack[0], attr) for attr in ('type', 'primary_type')):
         return stack[0]  # this is not our token
+
+    for index, token in enumerate(stack):
+        if token.type == MATHEXPR:
+            stack[index] = evaluate(token.value, context=context, return_token=True)
 
     while len(stack) > 1 or (stack and stack[0].primary_type in (PARENTHESIS, FCALL, VARIABLE)):
         op, op_start, op_end = get_op(stack)
@@ -56,6 +60,9 @@ def get_op(tokens):
 
 
 def evaluate_op(op, context):
+    if not isinstance(op, list):
+        op = [op]
+
     if hasattr(op[0], 'type') and op[0].type == FCALL:
         func = op[0]
         function_response = func.execute(context)
