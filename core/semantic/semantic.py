@@ -1,24 +1,27 @@
+from core.utils.operators import characters
+from core.utils.tools import get_token_index, contains
 from core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
                                IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
                                FunctionCall, BasicToken, ReturnStatement,
                                BreakStatement, ContinueStatement, Branch,
-                               ImportStatement, Class)
+                               ImportStatement, Class, ExecuteCode, EvaluateCode)
 from core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
                                  FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
                                  FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
                                  BREAK_KEYWORD, CONTINUE_KEYWORD,
-                                 IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD)
+                                 IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD,
+                                 EXEC_KEYWORD, EVAL_KEYWORD)
 from core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
                                    FBRACES, ANY, NEWLINE,
                                    MATHEXPR, IF_BLOCK, ELIF_BLOCK,
-                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE)
-from core.utils.operators import characters
-from core.utils.tools import get_token_index
+                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE,
+                                   EXECUTE_CODE, EVALUATE_CODE)
 from core.semantic.parsers import (if_elif_branch, else_branch,
                                    function_call, function_assign,
                                    for_loop, while_loop, var_assign,
                                    return_token, break_token, continue_token,
-                                   import_statement, class_assign,
+                                   import_statement, class_assign, execute_code,
+                                   evaluate_code,
                                    parse_list, parse_dict, parse_tuple)
 
 
@@ -43,8 +46,9 @@ class MatchToken:
 
 constructions = {
     Function: (
-    MatchToken(FUNCASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(BRACES, TUPLE, primary_types=(PARENTHESIS, TUPLE)),
-    MatchToken(FBRACES, primary_types=PARENTHESIS)),
+        MatchToken(FUNCASSIGN_KEYWORD), MatchToken(VARIABLE),
+        MatchToken(BRACES, TUPLE, primary_types=(PARENTHESIS, TUPLE)),
+        MatchToken(FBRACES, primary_types=PARENTHESIS)),
     Class: (MatchToken(CLASSASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(FBRACES, primary_types=PARENTHESIS)),
     VarAssign: (MatchToken(VARIABLE, BRACES, TUPLE), MatchToken(characters['=']), MatchToken(ANY)),
     ForLoop: (MatchToken(FOR_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS),
@@ -62,7 +66,8 @@ constructions = {
     BreakStatement: (MatchToken(BREAK_KEYWORD),),
     ContinueStatement: (MatchToken(CONTINUE_KEYWORD),),
     ImportStatement: (MatchToken(IMPORT_KEYWORD), MatchToken(STRING), MatchToken(AS_KEYWORD), MatchToken(VARIABLE)),
-
+    ExecuteCode: (MatchToken(EXEC_KEYWORD), MatchToken(ANY)),
+    EvaluateCode: (MatchToken(EVAL_KEYWORD), MatchToken(ANY)),
 }
 parsers = {
     Function: function_assign,
@@ -78,6 +83,8 @@ parsers = {
     ContinueStatement: continue_token,
     ImportStatement: import_statement,
     Class: class_assign,
+    ExecuteCode: execute_code,
+    EvaluateCode: evaluate_code,
 }
 token_types_parsers = {
     LIST: parse_list,
@@ -101,9 +108,10 @@ def match(original, match_list, ignore=()):
         current_match_token_index += 1
 
     if len(matched) != len(match_list):
-        # if output tokens counter does not equals match list length,
-        # it means, that match_list does not matches given array
-        # of tokens
+        """
+        if output tokens counter does not equals match list length, it means, that
+        match_list does not matches given array of tokens
+        """
         return False
 
     return matched
@@ -165,7 +173,7 @@ def parse(context, executor, evaluator, tokens):
                 temp_math_expr_tokens.append(value)
         else:
             if temp_math_expr_tokens:
-                token = BasicToken(context, MATHEXPR, temp_math_expr_tokens)
+                token = BasicToken(context, MATHEXPR, temp_math_expr_tokens[:])
                 output_tokens.append(token)
                 temp_math_expr_tokens.clear()
 
