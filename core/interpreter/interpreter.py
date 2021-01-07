@@ -40,6 +40,8 @@ def executor(tokens, context=None):
 
     if context is None:
         context = Context()
+    if isinstance(tokens, str):  # this is raw
+        return interpret(tokens, context=context, exit_after_execution=False)
 
     for token in tokens:
         if token.type == IMPORT_STATEMENT:
@@ -80,9 +82,6 @@ def init_paths(change_cwd=True):
 
     for path in paths['default'].keys():  # values are comments, which explain the path's destination
         sys_path.append(os_path.abspath(path))
-
-    # if change_cwd:
-    #     chdir(paths['working_path'])
 
 
 if __name__ == '__main__':
