@@ -9,7 +9,8 @@ from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                    RETURN_STATEMENT, BREAK_STATEMENT,
                                    CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
                                    IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
-                                   MODULE, LIST, TUPLE)
+                                   LIST, TUPLE, EXECUTE_CODE, EVALUATE_CODE,
+                                   STRING)
 
 
 class BasicToken:
@@ -432,3 +433,66 @@ class ImportStatement:
         return f'IMPORT({self.name}:{self.path})'
 
     __repr__ = __str__
+
+
+class ExecuteCode:
+    def __init__(self, executor, semantic_parser, code):
+        self.executor = executor
+        self.semantic_parser = semantic_parser
+        self.code = code
+
+        self.type = self.primary_type = EXECUTE_CODE
+
+    def execute(self, context):
+        from core.lexer.lexer import Lexer
+
+        if self.code.type == STRING:
+            raw_code = self.code.value
+        elif self.code.type == VARIABLE:
+            raw_code = context[self.code.value]
+        elif hasattr(self.code, 'execute'):
+            raw_code = self.code.execute()
+        else:
+            raise TypeError('only string or variable can be given to exec')
+
+        if (hasattr(raw_code, 'primary_type') and raw_code.type != STRING)\
+                or not isinstance(raw_code, str):
+            raise SyntaxError('only string can be given to exec')
+
+        # raw_code now is string (I hope)
+        lexer = Lexer(raw_code)
+        code = lexer.parse(context=context)
+
+        return self.executor(self.semantic_parser(code), context=context)
+
+
+class EvaluateCode:
+    def __init__(self, evaluator, semantic_parser, code):
+        self.evaluator = evaluator
+        self.semantic_parser = semantic_parser
+        self.code = code
+
+        self.type = self.primary_type = EVALUATE_CODE
+
+    def execute(self, context):
+        from core.lexer.lexer import Lexer
+
+        if self.code.type == STRING:
+            raw_code = self.code.value
+        elif self.code.type == VARIABLE:
+            raw_code = context[self.code.value]
+        elif hasattr(self.code, 'execute'):
+            raw_code = self.code.execute()
+        else:
+            raise TypeError('only string or variable can be given to exec')
+
+        if (hasattr(raw_code, 'primary_type') and raw_code.type != STRING)\
+                or not isinstance(raw_code, str):
+            raise SyntaxError('only string can be given to exec')
+
+        # raw_code now is string (I hope)
+        lexer = Lexer(raw_code)
+        code = lexer.parse(context=context)
+        semantized_code = self.semantic_parser(code)
+
+        return self.evaluator(semantized_code, context=context)
