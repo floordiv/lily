@@ -235,6 +235,6 @@ class Lexer:
                     ...
 
 
-# lexer = Lexer("===")
+# lexer = Lexer("[1, 2, 3].contains(5)")
 # lexemes = lexer.parse()
 # print(lexemes)

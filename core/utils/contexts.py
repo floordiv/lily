@@ -48,10 +48,14 @@ class Context:
         value = variables[first_varpath_element]
 
         for var in varpath:
-            if hasattr(value, 'type') and value.type not in (LIST, DICT):
+            if all(hasattr(value, attr) for attr in ['type', 'context']) and value.type not in (LIST, DICT):
                 value = value.context
-            elif hasattr(value, '__dict__') and not isinstance(value, Context):    # to support python calls
-                value = Context(init_vars={var: getattr(value, var) for var in dir(value)})
+            elif not isinstance(value, Context):    # to support python calls
+                try:
+                    value = getattr(value, var)
+                    continue
+                except AttributeError:
+                    raise AttributeError
 
             value = value[var]
 
@@ -62,6 +66,9 @@ class Context:
 
     def copy(self):
         return Context(init_vars=self.variables.copy())
+
+    def clear(self):
+        self.variables = pybindings.copy()
 
     def __instancecheck__(self, instance):
         """
@@ -75,7 +82,9 @@ class Context:
         return False
 
     def __str__(self):
-        return f'Context({self.variables})'
+        variables = {var: val for var, val in self.variables.items() if var not in pybindings}
+
+        return f'Context({variables})'
 
     __repr__ = __str__
 

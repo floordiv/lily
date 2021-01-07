@@ -1,15 +1,15 @@
 from copy import deepcopy
-from typing import Any
+from types import ModuleType
 
 from lily.core.utils.contexts import Context
-from lily.core.utils.tools import split_tokens, create_token
+from lily.core.utils.tools import create_token
 from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                         FUNCASSIGN, VARASSIGN, FCALL,
                                         BRANCH, WHILE_LOOP, FOR_LOOP,
-                                        BRACES, RETURN_STATEMENT, BREAK_STATEMENT,
+                                        RETURN_STATEMENT, BREAK_STATEMENT,
                                         CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
                                         IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
-                                        COMMA, LIST, DICT)
+                                        MODULE, LIST, TUPLE)
 
 
 class BasicToken:
@@ -90,7 +90,7 @@ class FunctionCall:
             if isinstance(kwval, BasicToken):
                 kwval = kwval.value
 
-            kwargs[kwvar] = kwval
+            kwargs[kwvar.value] = kwval
 
         return func(*args, **kwargs)
 
@@ -124,7 +124,7 @@ class Function:
             temp_context[arg.value] = given_arg
 
         for default_kw_var, default_kw_val in self.kwargs.items():
-            temp_context[default_kw_var] = default_kw_val
+            temp_context[default_kw_var.value] = default_kw_val
 
         for kw_var, kw_val in kwargs.items():
             if kw_var not in self.kwargs:
@@ -332,57 +332,47 @@ class WhileLoop:
 
 class VarAssign:
     def __init__(self, evaluator, name, value):
-        if value.type == MATHEXPR:
-            value = value.value
-
         self.evaluator = evaluator
         self.name = name
-        self.value: Any = value
+        self.value = value
 
         self.type = self.primary_type = VARASSIGN
 
     def execute(self, context):
-        if not isinstance(self.value, list):
-            self.value = [self.value]
+        value = self.value
 
-        names = self.name
+        if hasattr(value, 'execute'):
+            value = value.execute(context)
 
-        if names.type == BRACES:
-            names = [token.value for token in names.value if token.type != COMMA]
-            value = self.get_processed_value(context)
+            if not hasattr(value, 'primary_type') and not isinstance(value, ModuleType):
+                value = create_token(context, BasicToken, ClassInstance, value)
+
+        if hasattr(value, 'primary_type') and value.type == MATHEXPR:
+            value = self.evaluator(value.value, context, return_token=True)
+
+        if hasattr(self.name, 'primary_type') and self.name.type == TUPLE:
+            if value.type not in (LIST, TUPLE):
+                raise TypeError('only lists and tuples can be unpacked')
+
+            to_assign = zip(self.name.value, value.value)
         else:
-            names = [names.value]
-            value = self.value
+            to_assign = [[self.name, value]]
 
-        if hasattr(value, 'type'):
-            if value.type == LIST:
-                value = value.value
-        else:
-            if not isinstance(value, (list, tuple)):
-                value = split_tokens(value, COMMA)
+        for var, val in to_assign:
+            if var.type != VARIABLE:
+                raise SyntaxError('assigning value to non-variable')
+            elif hasattr(val, 'primary_type') and val.type == MATHEXPR:
+                val = val.value
 
-        if len(names) > 1:
-            for var, val in zip(names, value):
-                if not hasattr(val, 'type'):
-                    val = create_token(context, BasicToken, val)
-
+            if hasattr(val, 'primary_type') and val.type in (CLASSASSIGN, CLASSINSTANCE):
+                result = val
+            else:
                 if not isinstance(val, list):
                     val = [val]
 
-                self.assign(context, var, self.evaluator(val, context))
-        else:
-            self.assign(context, names[0], self.evaluator(value, context))
+                result = self.evaluator(val, context)
 
-    def assign(self, context, name, value):
-        context[name] = value
-
-    def get_processed_value(self, context):
-        value: Any = self.value[0]
-
-        if hasattr(value, 'execute'):
-            return value.execute(context)
-
-        return value.value
+            context[var.value] = result
 
     def __str__(self):
         return f'VarAssign(name={repr(self.name)}, value={repr(self.value)})'

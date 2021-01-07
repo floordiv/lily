@@ -1,7 +1,8 @@
 from lily.core.utils.tools import split_tokens, contains
 from lily.core.utils.tokentypes import (COMMA, COLON, LIST,
                                         DICT, QBRACES, FBRACES,
-                                        PARENTHESIS, NEWLINE, INTEGER)
+                                        PARENTHESIS, NEWLINE, TUPLE,
+                                        BRACES)
 
 
 """
@@ -23,6 +24,13 @@ def parse_list(token):
     return token
 
 
+def parse_tuple(token):
+    token = parse_list(token)
+    token.type = token.primary_type = TUPLE
+
+    return token
+
+
 def parse_dict(token):
     token.type = token.primary_type = DICT
     key_value_pairs = split_tokens(token.value, COMMA, exclude=(NEWLINE,))
@@ -39,6 +47,7 @@ def parse_dict(token):
 token_types_parsers = {
     parse_list: (QBRACES, PARENTHESIS, lambda token: True),
     parse_dict: (FBRACES, PARENTHESIS, lambda token: contains(token.value, COLON)),  # shit code, rewrite it later
+    parse_tuple: (BRACES, PARENTHESIS, lambda token: contains(token.value, COMMA)),  # also shit code, but I don't care
 }
 
 

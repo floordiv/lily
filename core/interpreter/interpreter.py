@@ -1,5 +1,6 @@
-from os import chdir
-from sys import exit
+from json import load
+from os import chdir, path as os_path
+from sys import exit, path as sys_path
 
 from lily.core.lexer.lexer import Lexer
 from lily.core.semantic import semantic
@@ -14,7 +15,11 @@ from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)
 
 
-def interpret(raw: str, context=main_context, exit_after_execution=True):
+def interpret(raw: str, context=None, exit_after_execution=True):
+    if context is None:
+        main_context.clear()
+        context = main_context
+
     lexer = Lexer(process_escape_characters(raw))
     lexemes = lexer.parse()
     final_tokens = semantic.parse(context, executor, evaluate, lexemes)
@@ -64,5 +69,22 @@ def import_file(path):
     return interpret(source, context=new_context, exit_after_execution=False), new_context
 
 
+def init_paths(change_cwd=True):
+    """
+    change_cwd: use os.chdir to have a source-root as lily/
+    """
+    if change_cwd:
+        chdir('../..')
+
+    with open('core/config/paths.json') as paths_cfg:
+        paths = load(paths_cfg)
+
+    for path in paths['default'].keys():   # values are comments, which explain the path's destination
+        sys_path.append(os_path.abspath(path))
+
+    # if change_cwd:
+    #     chdir(paths['working_path'])
+
+
 if __name__ == '__main__':
-    chdir('../..')
+    init_paths()

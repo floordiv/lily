@@ -6,7 +6,6 @@ my_dict = {
 
 string = 'one'
 print(my_dict.get(string))
-#print(my_dict.get('four'))
 print(my_dict.contains('one'))
 
 dict_items = my_dict.items()

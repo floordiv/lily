@@ -1,10 +1,10 @@
 from lily.core.utils.operators import executors
-from lily.core.utils.tokens import BasicToken
+from lily.core.utils.tokens import BasicToken, ClassInstance
 from lily.core.utils.tools import create_token
 from lily.core.utils.tokentypes import (OPERATOR, FCALL,
                                         PARENTHESIS, VARIABLE,
                                         pytypes2lotus, CLASSINSTANCE,
-                                        LIST, DICT)
+                                        LIST, DICT, TUPLE)
 
 
 def evaluate(tokens, context: dict = None, return_token=False):
@@ -12,6 +12,9 @@ def evaluate(tokens, context: dict = None, return_token=False):
         context = {}
 
     stack = tokens[:]
+
+    if not all(hasattr(stack[0], attr) for attr in ('type', 'primary_type')):
+        return stack[0]  # this is not our token
 
     while len(stack) > 1 or (stack and stack[0].primary_type in (PARENTHESIS, FCALL, VARIABLE)):
         op, op_start, op_end = get_op(stack)
@@ -27,7 +30,7 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
     unpack_stack = stack[0]
 
-    if return_token or unpack_stack.type in (LIST, DICT):
+    if return_token or unpack_stack.type in (LIST, DICT, TUPLE):
         return unpack_stack
 
     return unpack_stack.value
@@ -57,7 +60,7 @@ def evaluate_op(op, context):
         func = op[0]
         function_response = func.execute(context)
 
-        return create_token(context, BasicToken, function_response)
+        return create_token(context, BasicToken, ClassInstance, function_response)
     elif len(op) == 1:
         return process_token(op[0], context)
 
@@ -67,7 +70,7 @@ def evaluate_op(op, context):
     executor = executors[op.value]
     result = executor(left, right)
 
-    return create_token(context, BasicToken, result)
+    return create_token(context, BasicToken, ClassInstance, result)
 
 
 def process_token(token, context):

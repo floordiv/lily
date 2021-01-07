@@ -1,11 +1,11 @@
+from types import ModuleType
 from itertools import chain
 from re import finditer
 
 from lily.core.utils.tokentypes import (NEWLINE, VARIABLE,
-                                        MATHEXPR, COMMA,
+                                        MATHEXPR, MODULE,
                                         pytypes2lotus, CLASSINSTANCE,
-                                        LIST, DICT)
-from lily.core.utils.operators import characters
+                                        LIST, DICT, VARASSIGN)
 
 
 escape_characters = {
@@ -38,18 +38,24 @@ def isfloat(string):
 
 
 def parse_func_args(context, args_tokens, basic_token, leave_tokens=True):
+    """
+    TODO: remove useless args from all the calls
+    """
+
     args = []
     kwargs = {}
-    get_value = lambda token: token if leave_tokens else token.value
+    get_value = lambda token_: token_ if leave_tokens else token.value
 
-    for tokens in split_tokens(args_tokens.value, COMMA):
-        if len(tokens) == 3 and tokens[1].type == characters['=']:
-            var, _, val = tokens
-            kwargs[var.value] = get_value(val)
-        elif len(tokens) == 1:
-            args.append(get_value(tokens[0]))
+    for token in args_tokens.value:
+        if token.type == VARASSIGN:
+            var, val = token.name, token.value
+
+            if val.type == MATHEXPR:
+                val = val.value[0]
+
+            kwargs[get_value(var)] = get_value(val)
         else:
-            args.append(basic_token(context, MATHEXPR, tokens))
+            args.append(get_value(token))
 
     return args, kwargs
 
@@ -106,6 +112,10 @@ def split_tokens(tokens, splitby=(NEWLINE,), exclude=()):
     split_tokens_result = [[]]
 
     for token in tokens:
+        if not hasattrs(token, ('type', 'primary_type')):   # this is not our token
+            split_tokens_result[-1].append(token)
+            continue
+
         if token.type in exclude or token.primary_type in exclude:
             continue
 
@@ -152,8 +162,20 @@ def contains(source, token_type):
     return bool([token for token in source if token_type in (token.type, token.primary_type)])
 
 
-def create_token(context, basic_token, value):
+def create_token(context, basic_token, class_instance, value):
     if hasattr(value, 'type') and value.type in (LIST, DICT):
         return value
 
-    return basic_token(context, pytypes2lotus.get(type(value), CLASSINSTANCE), value)
+    try:
+        token_type = pytypes2lotus[type(value)]
+    except KeyError:
+        if isinstance(value, class_instance):
+            token_type = CLASSINSTANCE
+        else:
+            return value
+
+    return basic_token(context, token_type, value)
+
+
+def hasattrs(obj, attrs):
+    return all(hasattr(obj, attr) for attr in attrs)

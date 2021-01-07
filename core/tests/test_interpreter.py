@@ -1,6 +1,6 @@
-from os import chdir, listdir
+from os import listdir, getcwd
 
-from lily.core.interpreter.interpreter import interpret
+from lily.core.interpreter.interpreter import interpret, init_paths
 
 
 def load_example(name):
@@ -32,8 +32,7 @@ def test_all(examples_dir='./examples/', exclude=None):
 
 
 if __name__ == '__main__':
-    chdir('../..')
+    init_paths()
 
-
-# interpret(load_example('lists'))
-test_all(exclude=['simple_program_demo.lt'])
+# interpret(load_example('pls_work'))
+test_all(exclude=['simple_program_demo.lt', 'simple_echo_server.lt', 'simple_echo_client.lt'])
