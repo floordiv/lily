@@ -1,12 +1,9 @@
-from types import ModuleType
 from itertools import chain
 from re import finditer
 
-from lily.core.utils.tokentypes import (NEWLINE, VARIABLE,
-                                        MATHEXPR, MODULE,
-                                        pytypes2lotus, CLASSINSTANCE,
-                                        LIST, DICT, VARASSIGN)
-
+from core.utils.tokentypes import (NEWLINE, VARIABLE,
+                                   MATHEXPR, pytypes2lotus, CLASSINSTANCE,
+                                   LIST, DICT, VARASSIGN)
 
 escape_characters = {
     '\\n': '\n',

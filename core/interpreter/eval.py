@@ -1,10 +1,10 @@
-from lily.core.utils.operators import executors
-from lily.core.utils.tokens import BasicToken, ClassInstance
-from lily.core.utils.tools import create_token
-from lily.core.utils.tokentypes import (OPERATOR, FCALL,
-                                        PARENTHESIS, VARIABLE,
-                                        pytypes2lotus, CLASSINSTANCE,
-                                        LIST, DICT, TUPLE)
+from core.utils.operators import executors
+from core.utils.tokens import BasicToken, ClassInstance
+from core.utils.tools import create_token
+from core.utils.tokentypes import (OPERATOR, FCALL,
+                                   PARENTHESIS, VARIABLE,
+                                   pytypes2lotus, CLASSINSTANCE,
+                                   LIST, DICT, TUPLE)
 
 
 def evaluate(tokens, context: dict = None, return_token=False):
@@ -39,7 +39,7 @@ def evaluate(tokens, context: dict = None, return_token=False):
 def get_op(tokens):
     op, op_index = tokens[:3], 0
 
-    if len(op) == 1:    # it potentially can be 2, but fuuck...
+    if len(op) == 1:  # it potentially can be 2, but fuuck...
         if op[0].primary_type == PARENTHESIS:
             op = op[0]
 
@@ -50,7 +50,7 @@ def get_op(tokens):
             return token, index, index + 1
 
         if token.primary_type == OPERATOR and token.priority > op[1].priority:
-            op, op_index = tokens[index-1 if index > 0 else 0:index+2], index
+            op, op_index = tokens[index - 1 if index > 0 else 0:index + 2], index
 
     return op, op_index - 1 if op_index > 0 else 0, op_index + 3
 

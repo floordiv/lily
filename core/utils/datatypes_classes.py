@@ -1,6 +1,6 @@
-from lily.core.utils.tokentypes import LIST, DICT, TUPLE
-from lily.core.utils.tools import create_token
-from lily.core.utils.tokens import BasicToken, ClassInstance
+from core.utils.tokentypes import LIST, DICT, TUPLE
+from core.utils.tools import create_token
+from core.utils.tokens import BasicToken, ClassInstance
 
 
 def apply_token_attrs(self, token):

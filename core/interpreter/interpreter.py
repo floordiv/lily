@@ -2,15 +2,14 @@ from json import load
 from os import chdir, path as os_path
 from sys import exit, path as sys_path
 
-from lily.core.lexer.lexer import Lexer
-from lily.core.semantic import semantic
-from lily.core.interpreter.eval import evaluate
-from lily.core.utils.contexts import main_context, Context
-from lily.core.utils.tools import process_escape_characters
-from lily.core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
-                                        CONTINUE_STATEMENT, BREAK_STATEMENT,
-                                        IMPORT_STATEMENT)
-
+from core.lexer.lexer import Lexer
+from core.semantic import semantic
+from core.interpreter.eval import evaluate
+from core.utils.contexts import main_context, Context
+from core.utils.tools import process_escape_characters
+from core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
+                                   CONTINUE_STATEMENT, BREAK_STATEMENT,
+                                   IMPORT_STATEMENT)
 
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)
 
@@ -79,7 +78,7 @@ def init_paths(change_cwd=True):
     with open('core/config/paths.json') as paths_cfg:
         paths = load(paths_cfg)
 
-    for path in paths['default'].keys():   # values are comments, which explain the path's destination
+    for path in paths['default'].keys():  # values are comments, which explain the path's destination
         sys_path.append(os_path.abspath(path))
 
     # if change_cwd:

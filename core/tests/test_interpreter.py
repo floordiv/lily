@@ -1,6 +1,6 @@
-from os import listdir, getcwd
+from os import listdir
 
-from lily.core.interpreter.interpreter import interpret, init_paths
+from core.interpreter.interpreter import interpret, init_paths
 
 
 def load_example(name):

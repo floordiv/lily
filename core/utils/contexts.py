@@ -1,5 +1,5 @@
-from lily.lib.std.bindings import pybindings
-from lily.core.utils.tokentypes import LIST, DICT
+from lib.std.bindings import pybindings
+from core.utils.tokentypes import LIST, DICT
 
 
 class Context:

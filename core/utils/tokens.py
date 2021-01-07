@@ -1,15 +1,15 @@
 from copy import deepcopy
 from types import ModuleType
 
-from lily.core.utils.contexts import Context
-from lily.core.utils.tools import create_token
-from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
-                                        FUNCASSIGN, VARASSIGN, FCALL,
-                                        BRANCH, WHILE_LOOP, FOR_LOOP,
-                                        RETURN_STATEMENT, BREAK_STATEMENT,
-                                        CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
-                                        IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
-                                        MODULE, LIST, TUPLE)
+from core.utils.contexts import Context
+from core.utils.tools import create_token
+from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
+                                   FUNCASSIGN, VARASSIGN, FCALL,
+                                   BRANCH, WHILE_LOOP, FOR_LOOP,
+                                   RETURN_STATEMENT, BREAK_STATEMENT,
+                                   CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
+                                   IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
+                                   MODULE, LIST, TUPLE)
 
 
 class BasicToken:
@@ -432,4 +432,3 @@ class ImportStatement:
         return f'IMPORT({self.name}:{self.path})'
 
     __repr__ = __str__
-

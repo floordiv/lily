@@ -1,1 +1,1 @@
-import lily.core.tests.test_interpreter
+import core.tests.test_interpreter

@@ -1,4 +1,4 @@
-from lily.core.utils.operators import characters
+from core.utils.operators import characters
 
 
 # built-in data types

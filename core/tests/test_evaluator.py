@@ -1,7 +1,7 @@
 from math import pi
 
-from lily.core.lexer.lexer import Lexer
-from lily.core.interpreter.eval import evaluate
+from core.lexer.lexer import Lexer
+from core.interpreter.eval import evaluate
 
 
 exprs = (

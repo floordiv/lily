@@ -1,9 +1,8 @@
-from lily.core.utils.tools import split_tokens, contains
-from lily.core.utils.tokentypes import (COMMA, COLON, LIST,
-                                        DICT, QBRACES, FBRACES,
-                                        PARENTHESIS, NEWLINE, TUPLE,
-                                        BRACES)
-
+from core.utils.tools import split_tokens, contains
+from core.utils.tokentypes import (COMMA, COLON, LIST,
+                                   DICT, QBRACES, FBRACES,
+                                   PARENTHESIS, NEWLINE, TUPLE,
+                                   BRACES)
 
 """
 this is a raw step. We just say, that this token is a list/dict/tuple/etc..

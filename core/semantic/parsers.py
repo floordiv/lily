@@ -1,9 +1,8 @@
-from lily.core.utils.tools import parse_func_args, split_tokens, process_token
-from lily.core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
-                                        LIST, DICT)
-from lily.core.utils.datatypes_classes import List, Dict, Tuple
-from lily.core.utils.tokens import BasicToken
-
+from core.utils.tools import parse_func_args, split_tokens, process_token
+from core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
+                                   LIST, DICT)
+from core.utils.datatypes_classes import List, Dict, Tuple
+from core.utils.tokens import BasicToken
 
 TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
 
@@ -155,7 +154,7 @@ def parse_tuple(executor, evaluator, context, semantic_parser, token):
 
 def parse_dict(executor, evaluator, context, semantic_parser, token):
     if isinstance(token, Dict):
-        return token    # dict already parsed
+        return token  # dict already parsed
 
     cooked_dict = {}
 

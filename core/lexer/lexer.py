@@ -1,8 +1,7 @@
-from lily.core.lexer import datatypes
-from lily.core.utils import (keywords, tokentypes,
-                             operators, tokens,
-                             tools, priorities)
-
+from core.lexer import datatypes
+from core.utils import (keywords, tokentypes,
+                        operators, tokens,
+                        tools, priorities)
 
 braces_openers = {
     '(': ')',
@@ -56,7 +55,7 @@ class Lexer:
                 self.append(output_tokens, tokens.BasicToken(context, tokentypes.NEWLINE, '\n'))
                 output_tokens.append(tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
             elif letter == ' ':
-                if output_tokens[-1].value in keywords.keywords:    # other way, just skip it
+                if output_tokens[-1].value in keywords.keywords:  # other way, just skip it
                     keyword = output_tokens[-1].value
                     keyword_type = keywords.keywords[keyword]
 
@@ -65,14 +64,16 @@ class Lexer:
                 self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
                 continue
             elif letter in operators.special_characters:
-                if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[-1].value + letter in operators.characters:
+                if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[
+                    -1].value + letter in operators.characters:
                     output_tokens[-1].value += letter
                 else:
                     if letter == '.' and output_tokens[-1].type != tokentypes.OPERATOR:
                         output_tokens[-1].value += '.'
                         continue
 
-                    self.append(output_tokens, tokens.BasicToken(context, tokentypes.OPERATOR, letter, primary_type=tokentypes.OPERATOR))
+                    self.append(output_tokens, tokens.BasicToken(context, tokentypes.OPERATOR, letter,
+                                                                 primary_type=tokentypes.OPERATOR))
             else:
                 if letter in tuple('\'"'):
                     string, skip_iters = self.get_string_ending(code[index:])
@@ -138,7 +139,8 @@ class Lexer:
             if token.primary_type == tokentypes.PARENTHESIS:
                 token.value = self.parse_unary(token.value)
 
-            if token.primary_type == tokentypes.OPERATOR and (not output_tokens or output_tokens[-1].primary_type == tokentypes.OPERATOR):
+            if token.primary_type == tokentypes.OPERATOR and (
+                    not output_tokens or output_tokens[-1].primary_type == tokentypes.OPERATOR):
                 temp_signs.append(token)
             else:
                 if temp_signs:
@@ -233,7 +235,6 @@ class Lexer:
             if token.type == dot:
                 if cooked[-1].value + '.' not in operators.characters:
                     ...
-
 
 # lexer = Lexer("[1, 2, 3].contains(5)")
 # lexemes = lexer.parse()

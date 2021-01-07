@@ -1,25 +1,25 @@
-from lily.core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
-                                    IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
-                                    FunctionCall, BasicToken, ReturnStatement,
-                                    BreakStatement, ContinueStatement, Branch,
-                                    ImportStatement, Class)
-from lily.core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
-                                      FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
-                                      FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
-                                      BREAK_KEYWORD, CONTINUE_KEYWORD,
-                                      IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD)
-from lily.core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
-                                        FBRACES, ANY, NEWLINE,
-                                        MATHEXPR, IF_BLOCK, ELIF_BLOCK,
-                                        ELSE_BLOCK, STRING, LIST, DICT, TUPLE)
-from lily.core.utils.operators import characters
-from lily.core.utils.tools import get_token_index
-from lily.core.semantic.parsers import (if_elif_branch, else_branch,
-                                        function_call, function_assign,
-                                        for_loop, while_loop, var_assign,
-                                        return_token, break_token, continue_token,
-                                        import_statement, class_assign,
-                                        parse_list, parse_dict, parse_tuple)
+from core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
+                               IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
+                               FunctionCall, BasicToken, ReturnStatement,
+                               BreakStatement, ContinueStatement, Branch,
+                               ImportStatement, Class)
+from core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
+                                 FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
+                                 FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
+                                 BREAK_KEYWORD, CONTINUE_KEYWORD,
+                                 IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD)
+from core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
+                                   FBRACES, ANY, NEWLINE,
+                                   MATHEXPR, IF_BLOCK, ELIF_BLOCK,
+                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE)
+from core.utils.operators import characters
+from core.utils.tools import get_token_index
+from core.semantic.parsers import (if_elif_branch, else_branch,
+                                   function_call, function_assign,
+                                   for_loop, while_loop, var_assign,
+                                   return_token, break_token, continue_token,
+                                   import_statement, class_assign,
+                                   parse_list, parse_dict, parse_tuple)
 
 
 class MatchToken:
@@ -42,15 +42,20 @@ class MatchToken:
 
 
 constructions = {
-    Function: (MatchToken(FUNCASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(BRACES, TUPLE, primary_types=(PARENTHESIS, TUPLE)),
-               MatchToken(FBRACES, primary_types=PARENTHESIS)),
+    Function: (
+    MatchToken(FUNCASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(BRACES, TUPLE, primary_types=(PARENTHESIS, TUPLE)),
+    MatchToken(FBRACES, primary_types=PARENTHESIS)),
     Class: (MatchToken(CLASSASSIGN_KEYWORD), MatchToken(VARIABLE), MatchToken(FBRACES, primary_types=PARENTHESIS)),
     VarAssign: (MatchToken(VARIABLE, BRACES, TUPLE), MatchToken(characters['=']), MatchToken(ANY)),
-    ForLoop: (MatchToken(FOR_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
-    WhileLoop: (MatchToken(WHILE_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
-    IfBranchLeaf: (MatchToken(IF_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
+    ForLoop: (MatchToken(FOR_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS),
+              MatchToken(FBRACES, primary_types=PARENTHESIS)),
+    WhileLoop: (MatchToken(WHILE_LOOP_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS),
+                MatchToken(FBRACES, primary_types=PARENTHESIS)),
+    IfBranchLeaf: (MatchToken(IF_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS),
+                   MatchToken(FBRACES, primary_types=PARENTHESIS)),
     ElifBranchLeaf: (
-        MatchToken(ELIF_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS), MatchToken(FBRACES, primary_types=PARENTHESIS)),
+        MatchToken(ELIF_KEYWORD), MatchToken(BRACES, primary_types=PARENTHESIS),
+        MatchToken(FBRACES, primary_types=PARENTHESIS)),
     ElseBranchLeaf: (MatchToken(ELSE_KEYWORD), MatchToken(FBRACES, primary_types=PARENTHESIS)),
     FunctionCall: (MatchToken(VARIABLE), MatchToken(BRACES, TUPLE, primary_types=(PARENTHESIS, TUPLE))),
     ReturnStatement: (MatchToken(RETURN_KEYWORD), MatchToken(ANY)),
