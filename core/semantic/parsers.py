@@ -1,8 +1,8 @@
+from core.utils.tokens import BasicToken
+from core.utils.datatypes_classes import List, Dict, Tuple
 from core.utils.tools import parse_func_args, split_tokens, process_token
 from core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
-                                   LIST, DICT)
-from core.utils.datatypes_classes import List, Dict, Tuple
-from core.utils.tokens import BasicToken
+                                   LIST, DICT, STRING, VARIABLE)
 
 TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
 
@@ -69,6 +69,18 @@ def var_assign(executor, evaluator, context, semantic_parser, tokens):
     value = semantic_parser(context, executor, evaluator, value)
 
     return evaluator, name, value[0]
+
+
+def execute_code(executor, evaluator, context, semantic_parser, tokens):
+    _, code = tokens
+
+    return executor, lambda _tokens: semantic_parser(context, executor, evaluator, _tokens), code
+
+
+def evaluate_code(executor, evaluator, context, semantic_parser, tokens):
+    _, code = tokens
+
+    return evaluator, lambda _tokens: semantic_parser(context, executor, evaluator, _tokens), code
 
 
 def return_token(executor, evaluator, context, semantic_parser, tokens):
