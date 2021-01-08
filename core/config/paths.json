@@ -1,7 +1,0 @@
-{
-  "default": {
-    "../../..": "if we're running interpreter by lily.core.interpreter.interpreter",
-    "lib/std": "path to std lib. Used to import python-modules"
-  },
-  "working_path": "../.."
-}
