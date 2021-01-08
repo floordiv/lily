@@ -23,7 +23,8 @@ class Lexer:
         self.raw = raw
         self.context = context
 
-    def prepare_raw_source(self, source):
+    @staticmethod
+    def prepare_raw_source(source):
         prepared_raw = ''
 
         for line in source.splitlines():
@@ -64,8 +65,8 @@ class Lexer:
                 self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
                 continue
             elif letter in operators.special_characters:
-                if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[
-                    -1].value + letter in operators.characters:
+                if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[-1].value + letter in\
+                        operators.characters:
                     output_tokens[-1].value += letter
                 else:
                     if letter == '.' and output_tokens[-1].type != tokentypes.OPERATOR:
@@ -103,33 +104,6 @@ class Lexer:
 
         if len(lst) > 1:
             self.provide_token_type(lst[-2])
-
-    def get_string_ending(self, string):
-        opener = string[0]
-
-        for index, letter in enumerate(string[1:], start=1):
-            if letter == opener and string[index - 1] != '\\':
-                return string[:index + 1], index
-
-        return string, -1
-
-    def provide_token_type(self, token):
-        if token.value.isdigit():
-            token.type = token.primary_type = tokentypes.INTEGER
-            token.value = int(token.value)
-        elif tools.isfloat(token.value):
-            token.type = token.primary_type = tokentypes.FLOAT
-            token.value = float(token.value)
-        elif token.type == tokentypes.NO_TYPE:
-            if token.value in keywords.keywords:
-                token.type = token.primary_type = keywords.keywords[token.value]
-            else:
-                token.type = token.primary_type = tokentypes.VARIABLE
-        elif token.primary_type == tokentypes.OPERATOR:
-            if token.value in priorities.for_tokens:
-                token.priority = priorities.for_tokens[token.value]
-
-            token.type = operators.characters[token.value]
 
     def parse_unary(self, tokens_):
         output_tokens = []
@@ -181,12 +155,45 @@ class Lexer:
 
         return token
 
-    def apply_unary(self, token):
+    @staticmethod
+    def apply_unary(token):
         if token.unary == '-':
             token.value = -token.value
 
         if token.exclam:
             token.value = not token.value
+
+    @staticmethod
+    def get_string_ending(string):
+        opener = string[0]
+
+        for index, letter in enumerate(string[1:], start=1):
+            if letter == opener and string[index - 1] != '\\':
+                return string[:index + 1], index
+
+        return string, -1
+
+    @staticmethod
+    def provide_token_type(token):
+        if token.type not in (tokentypes.OPERATOR, tokentypes.NO_TYPE):
+            return
+
+        if token.value.isdigit():
+            token.type = token.primary_type = tokentypes.INTEGER
+            token.value = int(token.value)
+        elif tools.isfloat(token.value):
+            token.type = token.primary_type = tokentypes.FLOAT
+            token.value = float(token.value)
+        elif token.type == tokentypes.NO_TYPE:
+            if token.value in keywords.keywords:
+                token.type = token.primary_type = keywords.keywords[token.value]
+            else:
+                token.type = token.primary_type = tokentypes.VARIABLE
+        elif token.primary_type == tokentypes.OPERATOR:
+            if token.value in priorities.for_tokens:
+                token.priority = priorities.for_tokens[token.value]
+
+            token.type = operators.characters[token.value]
 
     def parse_braces(self, context, tokens_):
         opener = None
@@ -203,7 +210,7 @@ class Lexer:
                     temp.append(token)
                 else:
                     temp.append(token)
-            elif opener and token.value == braces_openers[opener]:
+            elif opener and token.primary_type == tokentypes.OPERATOR and token.value == braces_openers[opener]:
                 if opened:
                     opened -= 1
                     temp.append(token)
@@ -227,15 +234,8 @@ class Lexer:
 
         return output
 
-    def process_dots(self, tokens_):
-        dot = operators.characters['.']
-        cooked = []
 
-        for index, token in enumerate(tokens_):
-            if token.type == dot:
-                if cooked[-1].value + '.' not in operators.characters:
-                    ...
-
-# lexer = Lexer("[1, 2, 3].contains(5)")
+# lexer = Lexer("print(result, should_be, !(result == should_be))")
 # lexemes = lexer.parse()
 # print(lexemes)
+# print(lexemes[1].value[2][0], lexemes[1].value[2][0].exclam)
