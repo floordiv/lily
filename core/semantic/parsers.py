@@ -108,6 +108,14 @@ def import_statement(executor, evaluator, context, semantic_parser, tokens):
     return path.value, name.value
 
 
+def try_except_block(executor, evaluator, context, semantic_parser, tokens):
+    try_keyword, code, _, errhandler = tokens
+    code = semantic_parser(context, executor, evaluator, code.value)
+    errhandler = semantic_parser(context, executor, evaluator, errhandler.value)
+
+    return executor, code, errhandler
+
+
 def _parse_args(context, executor, evaluator, args, parse_semantic):
     output = []
 
