@@ -25,6 +25,7 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
         if hasattr(op, 'primary_type') and op.primary_type == PARENTHESIS:
             result = evaluate(op.value, context=context, return_token=True)
+            process_token_exclam(result, op)
             apply_token_unary(result, op.unary)
         else:
             result = evaluate_op(op, context)
@@ -99,8 +100,11 @@ def process_token(token, context):
     return token
 
 
-def process_token_exclam(token):
-    if token.exclam:
+def process_token_exclam(token, of_token=None):
+    if of_token is None:
+        of_token = token
+
+    if of_token.exclam:
         token.value = not token.value
         token.exclam = False
 
