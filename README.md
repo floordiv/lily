@@ -185,3 +185,17 @@ my_list = [1, 2, 3]
 (one, two, three) = my_list
 ```
 To unpack variables, you should write names in a braces. Works as in python, so, list should contain as much values, as variables you're declaring
+---
+Eval/exec statements:
+```
+exec "func my_func(a, b, c) { return (a + b + c) }"
+print(my_func(1, 2, 3))  # output: 6
+
+print(eval "1+2+3")  # output: 6
+
+# argument also may be a variable
+code = "print('it\'s Wednesday, dudes')"
+exec code
+
+# exec/eval made by operators cuz I need to pass context to them
+```
