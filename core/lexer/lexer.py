@@ -46,23 +46,27 @@ class Lexer:
 
         output_tokens = [tokens.BasicToken(context, tokentypes.NO_TYPE, '')]
         skip_iters = 0
+        lineno = 1
 
         for index, letter in enumerate(code):
+            if letter == '\n':
+                lineno += 1
+
             if skip_iters:
                 skip_iters -= 1
                 continue
 
             if letter == '\n':
                 self.append(output_tokens, tokens.BasicToken(context, tokentypes.NEWLINE, '\n'))
-                output_tokens.append(tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
+                output_tokens.append(tokens.BasicToken(context, tokentypes.NO_TYPE, '', lineno=lineno))
             elif letter == ' ':
                 if output_tokens[-1].value in keywords.keywords:  # other way, just skip it
                     keyword = output_tokens[-1].value
                     keyword_type = keywords.keywords[keyword]
 
-                    output_tokens[-1] = tokens.BasicToken(context, keyword_type, keyword)
+                    output_tokens[-1] = tokens.BasicToken(context, keyword_type, keyword, lineno=lineno)
 
-                self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
+                self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, '', lineno=lineno))
                 continue
             elif letter in operators.special_characters:
                 if output_tokens[-1].type == tokentypes.OPERATOR and output_tokens[-1].value + letter in\
@@ -74,16 +78,17 @@ class Lexer:
                         continue
 
                     self.append(output_tokens, tokens.BasicToken(context, tokentypes.OPERATOR, letter,
-                                                                 primary_type=tokentypes.OPERATOR))
+                                                                 primary_type=tokentypes.OPERATOR,
+                                                                 lineno=lineno))
             else:
                 if letter in tuple('\'"'):
                     string, skip_iters = self.get_string_ending(code[index:])
-                    string_token = tokens.BasicToken(context, tokentypes.STRING, string[1:-1])
+                    string_token = tokens.BasicToken(context, tokentypes.STRING, string[1:-1], lineno=lineno)
                     self.append(output_tokens, string_token)
                     continue
 
                 if output_tokens[-1].type == tokentypes.OPERATOR:
-                    self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, ''))
+                    self.append(output_tokens, tokens.BasicToken(context, tokentypes.NO_TYPE, '', lineno=lineno))
 
                 output_tokens[-1].value += letter
 
@@ -217,7 +222,7 @@ class Lexer:
                 else:
                     braces_type = braces_types[token.value]
                     new_token = tokens.BasicToken(context, braces_type, self.parse_braces(context, temp),
-                                                  primary_type=tokentypes.PARENTHESIS)
+                                                  primary_type=tokentypes.PARENTHESIS, lineno=token.lineno)
 
                     output.append(new_token)
 
