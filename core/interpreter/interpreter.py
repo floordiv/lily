@@ -68,21 +68,3 @@ def import_file(path):
     new_context = Context()
 
     return interpret(source, context=new_context, exit_after_execution=False), new_context
-
-
-def init_paths(change_cwd=True):
-    """
-    change_cwd: use os.chdir to have a source-root as lily/
-    """
-    if change_cwd:
-        chdir('../..')
-
-    with open('core/config/paths.json') as paths_cfg:
-        paths = load(paths_cfg)
-
-    for path in paths['default'].keys():  # values are comments, which explain the path's destination
-        sys_path.append(os_path.abspath(path))
-
-
-if __name__ == '__main__':
-    init_paths()
