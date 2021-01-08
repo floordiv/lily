@@ -55,9 +55,6 @@ class _List:
         self.length += len(items)
 
     def execute(self, context):
-        for value in self.value:
-            print(value, '<- what the fuck in list?')
-
         self.value = [self.evaluator(value, context) for value in self.value]
 
     def __add__(self, other):
@@ -68,7 +65,15 @@ class _List:
             yield token
 
     def __str__(self):
-        return f'[{", ".join(repr(token.value) for token in self.value)}]'
+        output = '['
+
+        for token in self.value:
+            if hasattr(token, 'primary_type'):
+                output += repr(token.value) + ', '
+            else:
+                output += repr(token) + ', '
+
+        return output[:-2] + ']'
 
     __repr__ = __str__
 
@@ -90,9 +95,6 @@ class _Tuple:
         return self.value[index]
 
     def execute(self, context):
-        for value in self.value:
-            print(value, '<- what the fuck in tuple?')
-
         self.value = (self.evaluator(value, context) for value in self.value)
 
     def __iter__(self):
@@ -100,7 +102,15 @@ class _Tuple:
             yield token
 
     def __str__(self):
-        return f'({", ".join(repr(token.value) for token in self.value)})'
+        output = '('
+
+        for token in self.value:
+            if hasattr(token, 'primary_type'):
+                output += repr(token.value) + ', '
+            else:
+                output += repr(token) + ', '
+
+        return output[:-2] + ')'
 
     __repr__ = __str__
 
@@ -135,9 +145,6 @@ class _Dict:
         return final
 
     def execute(self, context):
-        for value in self.value:
-            print(value, '<- what the fuck in dict?')
-
         self.value = {key: self.evaluator(value, context) for key, value in self.value.items()}
 
     def __str__(self):
