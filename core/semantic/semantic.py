@@ -1,5 +1,5 @@
 from core.utils.operators import characters
-from core.utils.tools import get_token_index, contains
+from core.utils.tools import get_token_index
 from core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
                                IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
                                FunctionCall, BasicToken, ReturnStatement,
@@ -14,8 +14,7 @@ from core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
 from core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
                                    FBRACES, ANY, NEWLINE,
                                    MATHEXPR, IF_BLOCK, ELIF_BLOCK,
-                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE,
-                                   EXECUTE_CODE, EVALUATE_CODE)
+                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE)
 from core.semantic.parsers import (if_elif_branch, else_branch,
                                    function_call, function_assign,
                                    for_loop, while_loop, var_assign,
