@@ -1,0 +1,2 @@
+print(!(true == false))
+print('if text above says True, so, test passed')
