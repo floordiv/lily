@@ -4,23 +4,26 @@ from core.utils.tokens import (Function, VarAssign, ForLoop, WhileLoop,
                                IfBranchLeaf, ElifBranchLeaf, ElseBranchLeaf,
                                FunctionCall, BasicToken, ReturnStatement,
                                BreakStatement, ContinueStatement, Branch,
-                               ImportStatement, Class, ExecuteCode, EvaluateCode)
+                               ImportStatement, Class, ExecuteCode, EvaluateCode,
+                               TryExceptBlock)
 from core.utils.keywords import (IF_KEYWORD, ELIF_KEYWORD, ELSE_KEYWORD,
                                  FOR_LOOP_KEYWORD, WHILE_LOOP_KEYWORD,
                                  FUNCASSIGN_KEYWORD, RETURN_KEYWORD,
                                  BREAK_KEYWORD, CONTINUE_KEYWORD,
                                  IMPORT_KEYWORD, AS_KEYWORD, CLASSASSIGN_KEYWORD,
-                                 EXEC_KEYWORD, EVAL_KEYWORD)
+                                 EXEC_KEYWORD, EVAL_KEYWORD, TRY_KEYWORD,
+                                 EXCEPT_KEYWORD)
 from core.utils.tokentypes import (VARIABLE, PARENTHESIS, BRACES,
                                    FBRACES, ANY, NEWLINE,
                                    MATHEXPR, IF_BLOCK, ELIF_BLOCK,
-                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE)
+                                   ELSE_BLOCK, STRING, LIST, DICT, TUPLE,
+                                   TRY_EXCEPT_BLOCK)
 from core.semantic.parsers import (if_elif_branch, else_branch,
                                    function_call, function_assign,
                                    for_loop, while_loop, var_assign,
                                    return_token, break_token, continue_token,
                                    import_statement, class_assign, execute_code,
-                                   evaluate_code,
+                                   evaluate_code, try_except_block,
                                    parse_list, parse_dict, parse_tuple)
 
 
@@ -65,6 +68,7 @@ constructions = {
     BreakStatement: (MatchToken(BREAK_KEYWORD),),
     ContinueStatement: (MatchToken(CONTINUE_KEYWORD),),
     ImportStatement: (MatchToken(IMPORT_KEYWORD), MatchToken(STRING), MatchToken(AS_KEYWORD), MatchToken(VARIABLE)),
+    TryExceptBlock: (MatchToken(TRY_KEYWORD), MatchToken(FBRACES), MatchToken(EXCEPT_KEYWORD), MatchToken(FBRACES)),
     ExecuteCode: (MatchToken(EXEC_KEYWORD), MatchToken(ANY)),
     EvaluateCode: (MatchToken(EVAL_KEYWORD), MatchToken(ANY)),
 }
@@ -82,6 +86,7 @@ parsers = {
     ContinueStatement: continue_token,
     ImportStatement: import_statement,
     Class: class_assign,
+    TryExceptBlock: try_except_block,
     ExecuteCode: execute_code,
     EvaluateCode: evaluate_code,
 }
@@ -178,7 +183,7 @@ def parse(context, executor, evaluator, tokens):
 
             parser = parsers[construction]
             construction_args = parser(executor, evaluator, context, parse, tokens)
-            parsed_construction = construction(*construction_args)
+            parsed_construction = construction(*(construction_args + (tokens[-1].lineno,)))
             output_tokens.append(parsed_construction)
             temp = temp[len(tokens):]
 
