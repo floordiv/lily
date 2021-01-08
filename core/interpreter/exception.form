@@ -1,0 +1,2 @@
+{file}, on line {lineno}:
+    {errname}: {errtext}
