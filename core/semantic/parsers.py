@@ -2,7 +2,7 @@ from core.utils.tokens import BasicToken
 from core.utils.datatypes_classes import List, Dict, Tuple
 from core.utils.tools import parse_func_args, split_tokens, process_token
 from core.utils.tokentypes import (SEMICOLON, MATHEXPR, PARENTHESIS,
-                                   LIST, DICT, STRING, VARIABLE)
+                                   LIST, DICT, NEWLINE)
 
 TOKEN_TYPES_FOR_SEMANTIC_ANALYZE = (MATHEXPR, LIST, DICT)
 
@@ -130,7 +130,13 @@ def parse_list(executor, evaluator, context, semantic_parser, token):
         return token
 
     for index, value in enumerate(token.value):
-        parsed_value = semantic_parser(context, executor, evaluator, value)[0]
+        parsed_value = semantic_parser(context, executor, evaluator, value)
+
+        if not parsed_value:
+            del token.value[index]
+            continue
+
+        parsed_value = parsed_value[0]
 
         if parsed_value.type == MATHEXPR:
             parsed_value = parsed_value.value[0]
