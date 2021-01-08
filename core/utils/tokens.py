@@ -10,7 +10,7 @@ from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                    CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
                                    IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
                                    LIST, TUPLE, EXECUTE_CODE, EVALUATE_CODE,
-                                   STRING)
+                                   STRING, PARENTHESIS)
 
 
 class BasicToken:
@@ -73,7 +73,7 @@ class FunctionCall:
         kwargs = {}
 
         for arg in self.args:
-            if arg.type == VARIABLE:
+            if arg.type == VARIABLE or arg.primary_type == PARENTHESIS:
                 arg_value = self.evaluator([arg], context=context)
             elif arg.type == MATHEXPR:
                 arg_value = self.evaluator(arg.value, context)
