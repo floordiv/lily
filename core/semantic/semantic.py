@@ -95,6 +95,7 @@ token_types_parsers = {
     DICT: parse_dict,
     TUPLE: parse_tuple,
 }
+READ_TOKENS_TILL_NEWLINE = (VarAssign, ExecuteCode, EvaluateCode, ReturnStatement)
 
 
 def match(original, match_list, ignore=()):
@@ -126,7 +127,7 @@ def startswith(tokens):
         match_result = match(tokens[:len(construction_match_tokens)], construction_match_tokens, ignore=(NEWLINE,))
 
         if match_result:
-            if construction_name == VarAssign:
+            if construction_name in READ_TOKENS_TILL_NEWLINE:
                 match_result = tokens[:get_token_index(tokens, NEWLINE)]
 
             return construction_name, match_result
