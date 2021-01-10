@@ -72,19 +72,28 @@ def var_assign(executor, evaluator, context, semantic_parser, tokens):
 
 
 def execute_code(executor, evaluator, context, semantic_parser, tokens):
-    _, code = tokens
+    _, *code = tokens
+    code = semantic_parser(context, executor, evaluator, code)[0]
+
+    if code.type == MATHEXPR:
+        code = code.value[0]
 
     return executor, lambda _tokens: semantic_parser(context, executor, evaluator, _tokens), code
 
 
 def evaluate_code(executor, evaluator, context, semantic_parser, tokens):
-    _, code = tokens
+    _, *code = tokens
+    code = semantic_parser(context, executor, evaluator, code)[0]
+
+    if code.type == MATHEXPR:
+        code = code.value[0]
 
     return evaluator, lambda _tokens: semantic_parser(context, executor, evaluator, _tokens), code
 
 
 def return_token(executor, evaluator, context, semantic_parser, tokens):
-    _, value = tokens
+    _, *value = tokens
+    value = semantic_parser(context, executor, evaluator, value)[0]
 
     if value.primary_type == PARENTHESIS:
         value = _parse_args(context, executor, evaluator, value.value, semantic_parser)
