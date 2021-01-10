@@ -1,5 +1,5 @@
 func func_no_args() {
-    return (5+5)
+    return 5+5
 }
 
 a = print('not ok')
