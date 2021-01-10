@@ -43,7 +43,6 @@ class Lexer:
             context = self.context
 
         code = self.prepare_raw_source(code)
-
         output_tokens = [tokens.BasicToken(context, tokentypes.NO_TYPE, '')]
         skip_iters = 0
         lineno = 1
@@ -83,7 +82,8 @@ class Lexer:
             else:
                 if letter in tuple('\'"'):
                     string, skip_iters = self.get_string_ending(code[index:])
-                    string_token = tokens.BasicToken(context, tokentypes.STRING, string[1:-1], lineno=lineno)
+                    string = string[1:-1].replace("\\'", "'").replace('\\"', '"')
+                    string_token = tokens.BasicToken(context, tokentypes.STRING, string, lineno=lineno)
                     self.append(output_tokens, string_token)
                     continue
 
@@ -240,7 +240,6 @@ class Lexer:
         return output
 
 
-# lexer = Lexer("print(result, should_be, !(result == should_be))")
+# lexer = Lexer('"func get_string() { return \\"print(\'passed!\')\\" }"')
 # lexemes = lexer.parse()
 # print(lexemes)
-# print(lexemes[1].value[2][0], lexemes[1].value[2][0].exclam)
