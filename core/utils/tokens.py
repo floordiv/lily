@@ -2,7 +2,7 @@ from copy import deepcopy
 from types import ModuleType
 
 from core.utils.contexts import Context
-from core.utils.tools import create_token
+from core.utils.tools import create_token, process_escape_characters
 from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                    FUNCASSIGN, VARASSIGN, FCALL,
                                    BRANCH, WHILE_LOOP, FOR_LOOP,
@@ -469,7 +469,7 @@ class ExecuteCode:
         elif self.code.type == VARIABLE:
             raw_code = context[self.code.value]
         elif hasattr(self.code, 'execute'):
-            raw_code = self.code.execute()
+            raw_code = self.code.execute(context)
         else:
             raise TypeError('only string or variable can be given to exec')
 
@@ -478,7 +478,7 @@ class ExecuteCode:
             raise SyntaxError('only string can be given to exec')
 
         # raw_code now is string (I hope)
-        lexer = Lexer(raw_code)
+        lexer = Lexer(process_escape_characters(raw_code))
         code = lexer.parse(context=context)
 
         return self.executor(self.semantic_parser(code), context=context)
@@ -511,11 +511,10 @@ class EvaluateCode:
             raise SyntaxError('only string can be given to exec')
 
         # raw_code now is string (I hope)
-        lexer = Lexer(raw_code)
+        lexer = Lexer(process_escape_characters(raw_code))
         code = lexer.parse(context=context)
-        semantized_code = self.semantic_parser(code)
 
-        return self.evaluator(semantized_code, context=context)
+        return self.evaluator(self.semantic_parser(code), context=context)
 
 
 class TryExceptBlock:
