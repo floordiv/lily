@@ -1,0 +1,5 @@
+func test() {
+    return 5+5
+}
+
+print(test())
