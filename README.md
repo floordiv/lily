@@ -50,11 +50,11 @@ if (some_expression) {
 Functions:
 ```
 func sum_abc(a, b, c) {
-  return (a + b + c)  # yes, to return values, we use braces
+  return a + b + c
 }
 
 func five() {
-  return 5  # but for single element, we may not use it
+  return 5
 }
 
 my_sum = sum_abc(1, 2, 3)
@@ -113,10 +113,20 @@ while (i < 10) {  # break and continue statements also work here
 } print(100)
 ```
 ---
-Imports:
+Imports (native):
 ```
-import 'path/to/package' as my_package  # full path to my_package is ./path/to/package.lt
-print(my_package.package_description)  # for example
+import 'path/to/package' as package  # full path to my_package is ./path/to/package.lt
+
+print(package.description)  # for example
+```
+---
+Imports (python modules):
+```
+pyimport 'path.to.package' as package
+# here we say python-like path to module
+# pyimport statement uses importlib.import_module
+
+print(package.__description__)
 ```
 ---
 Classes:
@@ -128,7 +138,7 @@ class MyClass {
   }
   
   func get_sum(cls) {
-    return (cls.a + cls.b)
+    return cls.a + cls.b
   }
 }
 
@@ -148,7 +158,7 @@ true - True (will be changed soon)
 false - False (will be changed soon)
 null - None
 getattr, setattr, hasattr - see in python docs*
-pyimport(python_like_path) - bind to the importlib.import_module
+import_py_module(python_like_path) - bind to the importlib.import_module
 ```
 ---
 Lists:
