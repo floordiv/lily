@@ -35,6 +35,10 @@ def parse_dict(token):
     key_value_pairs = split_tokens(token.value, COMMA, exclude=(NEWLINE,))
     raw_result = {}
 
+    if not key_value_pairs[-1]:
+        # something empty
+        key_value_pairs.pop()
+
     for key, _, value in key_value_pairs:
         raw_result[key] = value
 
