@@ -10,7 +10,7 @@ pybindings = {
     'getattr': getattr,
     'hasattr': hasattr,
     'setattr': setattr,
-    'pyimport': import_module,
+    'import_py_module': import_module,
     'bytes': lambda string: string.encode(),
     'from_bytes': lambda bytes_array: bytes_array.decode(),
 
