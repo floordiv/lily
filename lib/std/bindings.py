@@ -11,7 +11,7 @@ pybindings = {
     'hasattr': hasattr,
     'setattr': setattr,
     'import_py_module': import_module,
-    'bytes': lambda string: string.encode(),
+    'to_bytes': lambda string: string.encode(),
     'from_bytes': lambda bytes_array: bytes_array.decode(),
 
     '__version__': (0, 0, 1),
