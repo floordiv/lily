@@ -176,3 +176,18 @@ def create_token(context, basic_token, class_instance, value):
 
 def hasattrs(obj, attrs):
     return all(hasattr(obj, attr) for attr in attrs)
+
+
+def get_rid_of_tokens(tokens, get_rid_of=NEWLINE):
+    if not hasattrs(get_rid_of, '__contains__'):
+        get_rid_of = (get_rid_of,)
+
+    output = []
+
+    for token in tokens:
+        if token.type in get_rid_of:
+            continue
+
+        output.append(token)
+
+    return output
