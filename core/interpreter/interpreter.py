@@ -10,6 +10,9 @@ from core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
                                    IMPORT_STATEMENT)
 
 EXECUTOR_GIVE_HANDLING_BACK_IF_TYPES = (CONTINUE_STATEMENT, RETURN_STATEMENT, BREAK_STATEMENT)
+DEFAULT_EXCEPTION_FORM = """\
+{file}, on line {lineno}:
+    {errname}: {errtext}"""
 
 
 def interpret(raw: str, context=None, exit_after_execution=True, file='<incognito>'):
@@ -95,8 +98,11 @@ def import_file(path):
 
 
 def format_exception(file, lineno, errname, errtext):
-    with open('core/interpreter/exception.form') as exception_form:
-        form = exception_form.read()
+    try:
+        with open('core/interpreter/exception.form') as exception_form:
+            form = exception_form.read()
+    except FileNotFoundError:
+        form = DEFAULT_EXCEPTION_FORM
 
     return form.format(file=file,
                        lineno=lineno,
