@@ -1,6 +1,6 @@
 from core.lexer.lexer import Lexer
 from core.utils.tools import get_rid_of_tokens
-from core.utils.tokentypes import DICT, LIST, NEWLINE
+from core.utils.tokentypes import DICT, LIST, NEWLINE, VARIABLE
 
 
 class JsonParser:
@@ -25,6 +25,14 @@ class JsonParser:
             return self.process_list(element)
         elif element.type == DICT:
             return self.process_dict(element)
+        elif element.type == VARIABLE:
+            if element.value == 'null':
+                return None
+
+            if element.value not in ('true', 'false'):
+                raise TypeError('unknown variable: ' + element.value)
+
+            return element.value == 'true'
 
         return return_on_err
 
