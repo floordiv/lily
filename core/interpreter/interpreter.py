@@ -3,7 +3,6 @@ from sys import exit
 from core.lexer.lexer import Lexer
 from core.semantic import semantic
 from core.interpreter.eval import evaluate
-from core.utils.tokens import ReturnStatement
 from core.utils.contexts import main_context, Context
 from core.utils.tools import process_escape_characters
 from core.utils.tokentypes import (MATHEXPR, RETURN_STATEMENT,
@@ -87,7 +86,7 @@ def execute(*args, **kwargs):
 
 
 def import_file(path):
-    with open('./' + path) as fd:
+    with open(path) as fd:
         source = fd.read()
 
     new_context = Context()
