@@ -1,5 +1,6 @@
 from copy import deepcopy
 from types import ModuleType
+from importlib import import_module
 
 from core.utils.contexts import Context
 from core.utils.tools import create_token, process_escape_characters
@@ -10,7 +11,8 @@ from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
                                    CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
                                    IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
                                    LIST, TUPLE, EXECUTE_CODE, EVALUATE_CODE,
-                                   STRING, PARENTHESIS, TRY_EXCEPT_BLOCK)
+                                   STRING, PARENTHESIS, TRY_EXCEPT_BLOCK,
+                                   PYIMPORT_STATEMENT)
 
 
 class BasicToken:
@@ -445,6 +447,23 @@ class ImportStatement:
         self.lineno = lineno
 
         self.type = self.primary_type = IMPORT_STATEMENT
+
+    def __str__(self):
+        return f'IMPORT({self.name}:{self.path})'
+
+    __repr__ = __str__
+
+
+class PyimportStatement:
+    def __init__(self, path, name, lineno):
+        self.path = self.value = path
+        self.name = name
+        self.lineno = lineno
+
+        self.type = self.primary_type = PYIMPORT_STATEMENT
+
+    def execute(self, context):
+        context[self.name] = import_module(self.path)
 
     def __str__(self):
         return f'IMPORT({self.name}:{self.path})'
