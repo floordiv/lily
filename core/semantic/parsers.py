@@ -117,6 +117,12 @@ def import_statement(executor, evaluator, context, semantic_parser, tokens):
     return path.value, name.value
 
 
+def pyimport_statement(executor, evaluator, context, semantic_parser, tokens):
+    _, path, _, name = tokens
+
+    return path.value, name.value
+
+
 def try_except_block(executor, evaluator, context, semantic_parser, tokens):
     try_keyword, code, _, errhandler = tokens
     code = semantic_parser(context, executor, evaluator, code.value)
