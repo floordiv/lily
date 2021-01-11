@@ -1,7 +1,51 @@
-from lily.core.lexer.lexer import Lexer
+from core.lexer.lexer import Lexer
+from core.utils.tools import get_rid_of_tokens
+from core.utils.tokentypes import DICT, LIST, NEWLINE
 
 
-def parse(raw_json, context=None):
-    lexer = Lexer(raw_json, context=context)
-    lexemes = lexer.parse()
-    # TODO: complete json parser after dictionaries implementation
+class JsonParser:
+    def __init__(self, json):
+        self.json = json
+
+    def parse(self, json=None):
+        if json is None:
+            json = self.json
+
+        lexer = Lexer(json)
+        lexemes = get_rid_of_tokens(lexer.parse(), NEWLINE)
+        output = [self.process_element(elem) for elem in lexemes]
+
+        if len(lexemes) == 1:   # default json
+            output = output[0]
+
+        return output
+
+    def process_element(self, element, return_on_err=None):
+        if element.type == LIST:
+            return self.process_list(element)
+        elif element.type == DICT:
+            return self.process_dict(element)
+
+        return return_on_err
+
+    def process_list(self, token):
+        output = []
+
+        for (value,) in token.value:
+            output.append(self.process_element(value, value.value))
+
+        return output
+
+    def process_dict(self, dict_):
+        output = {}
+
+        for key, value in dict_.value.items():
+            output[key.value] = self.process_element(value, value.value)
+
+        return output
+
+
+def parse(raw_json):
+    json_parser = JsonParser(raw_json)
+
+    return json_parser.parse()
