@@ -1,3 +1,4 @@
-lex = pyimport('core.lexer.lexer')
+pyimport "core.lexer.lexer" as lex
+
 lexer = lex.Lexer('print("wow!")')
 print(lexer.parse())
