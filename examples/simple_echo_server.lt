@@ -8,7 +8,7 @@ sock.listen(1)
 
 print('Connection: ', ip, ':', port, sep='')
 
-conn.send(bytes('hello from server!'))
+conn.send(to_bytes('hello from server!'))
 response = conn.recv(1024)
 print('Received response:', from_bytes(response))
 conn.close()

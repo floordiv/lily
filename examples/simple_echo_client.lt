@@ -9,7 +9,7 @@ server_hello = sock.recv(1024)
 print('Received from server:', from_bytes(server_hello))
 
 print('Sending to server: hello from client!')
-sock.send(bytes('hello from client!'))
+sock.send(to_bytes('hello from client!'))
 print('Done!')
 
 sock.close()
