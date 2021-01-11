@@ -1,10 +1,12 @@
+pyimport "math" as math
+
+
 print(!false, 'should equal True')
 print(-!false, 'should equal -1')
 print(false || true, 'should equal True')
 print(true && true, 'should equal True')
 print(false && true, 'should equal False')
 
-math = pyimport('math')
 pi = math.pi
 x = 5
 
