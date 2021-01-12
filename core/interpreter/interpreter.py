@@ -1,7 +1,8 @@
 from sys import exit
 
-from core.lexer.lexer import Lexer
+from lib.std.modules import cache
 from core.semantic import semantic
+from core.lexer.lexer import Lexer
 from core.interpreter.eval import evaluate
 from core.utils.contexts import main_context, Context
 from core.utils.tools import process_escape_characters
@@ -89,10 +90,14 @@ def execute(*args, **kwargs):
 
 
 def import_file(path):
+    if path in cache:
+        return cache[path]
+
     with open(path) as fd:
         source = fd.read()
 
     new_context = Context()
+    cache[path] = new_context
 
     return interpret(source, context=new_context, exit_after_execution=False, file=path), new_context
 
