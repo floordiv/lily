@@ -16,14 +16,16 @@ from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
 
 
 class BasicToken:
-    def __init__(self, context, typeof, value, unary='+', primary_type=None, lineno=None):
+    def __init__(self, context, typeof,
+                 value, unary='+', exclam=False,
+                 primary_type=None, lineno=None):
         self.context = context
         self.type = typeof
         self.value: any = value
         self.unary = unary
         self.primary_type = primary_type or typeof
         self.priority = 0
-        self.exclam = False  # also known as `!var`. If true, value has to be swapped
+        self.exclam = exclam  # also known as `!var`. If true, value has to be swapped
         self.lineno = lineno
 
     def clone(self):
@@ -62,7 +64,9 @@ class BasicToken:
 
 
 class FunctionCall:
-    def __init__(self, evaluator, func_name, args, kwargs, unary, lineno):
+    def __init__(self, evaluator, func_name,
+                 args, kwargs, unary,
+                 exclam, lineno):
         self.evaluator = evaluator
         self.name = func_name
         self.args = args
@@ -71,6 +75,7 @@ class FunctionCall:
         self.lineno = lineno
 
         self.type = self.primary_type = FCALL
+        self.exclam = exclam
 
     def execute(self, context):
         func = context[self.name]
