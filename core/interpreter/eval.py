@@ -64,6 +64,7 @@ def evaluate_op(op, context):
     if not isinstance(op, list):
         op = [op]
 
+    # to avoid multiple getitems
     func = op[0]
 
     if hasattr(func, 'type') and func.type == FCALL:
