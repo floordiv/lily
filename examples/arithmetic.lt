@@ -10,6 +10,10 @@ print(false && true, 'should equal False')
 pi = math.pi
 x = 5
 
+func five() {
+    return 5
+}
+
 exprs = [
     ["2+2*2", 6],
     ["(2+2)+(2+2)", 8],
@@ -29,6 +33,7 @@ exprs = [
     ['(-5)', -5],
     ['-(1+x)', -6],
     ['---1', -1],
+    ['-five()', -5],
 ]
 
 print('x=', x, sep='')
