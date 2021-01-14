@@ -1,6 +1,6 @@
+from core.utils.tools import create_token
 from core.utils.operators import executors
 from core.utils.tokens import BasicToken, ClassInstance
-from core.utils.tools import create_token
 from core.utils.tokentypes import (OPERATOR, FCALL,
                                    PARENTHESIS, VARIABLE,
                                    pytypes2lotus, CLASSINSTANCE,
@@ -68,7 +68,7 @@ def evaluate_op(op, context):
         func = op[0]
         function_response = func.execute(context)
 
-        return create_token(context, BasicToken, ClassInstance, function_response)
+        return create_token(context, BasicToken, ClassInstance, function_response, unary=op[0].unary)
     elif len(op) == 1:
         return process_token(op[0], context)
 
