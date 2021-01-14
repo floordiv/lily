@@ -18,7 +18,7 @@ def function_call(executor, evaluator, context, semantic_parser, tokens):
 
     args = _parse_args(context, executor, evaluator, args, semantic_parser)
 
-    return evaluator, name.value, args, kwargs, name.unary
+    return evaluator, name.value, args, kwargs, name.unary, name.exclam
 
 
 def function_assign(executor, evaluator, context, semantic_parser, tokens):
