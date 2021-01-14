@@ -64,13 +64,17 @@ def evaluate_op(op, context):
     if not isinstance(op, list):
         op = [op]
 
-    if hasattr(op[0], 'type') and op[0].type == FCALL:
-        func = op[0]
-        function_response = func.execute(context)
+    func = op[0]
 
-        return create_token(context, BasicToken, ClassInstance, function_response, unary=op[0].unary)
+    if hasattr(func, 'type') and func.type == FCALL:
+        function_response = func.execute(context)
+        function_response_as_token = create_token(context, BasicToken, ClassInstance, function_response,
+                                                  unary=func.unary, exclam=func.exclam)
+        process_token_exclam(function_response_as_token)
+
+        return function_response_as_token
     elif len(op) == 1:
-        return process_token(op[0], context)
+        return process_token(func, context)
 
     left, op, right = op
     left = process_token(left, context).value
