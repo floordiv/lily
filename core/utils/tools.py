@@ -159,7 +159,9 @@ def contains(source, token_type):
     return bool([token for token in source if token_type in (token.type, token.primary_type)])
 
 
-def create_token(context, basic_token, class_instance, value, unary='+'):
+def create_token(context, basic_token,
+                 class_instance, value,
+                 unary='+', exclam=False):
     if hasattr(value, 'type') and value.type in (LIST, DICT):
         return value
 
@@ -171,7 +173,7 @@ def create_token(context, basic_token, class_instance, value, unary='+'):
         else:
             return value
 
-    return basic_token(context, token_type, value, unary=unary)
+    return basic_token(context, token_type, value, unary=unary, exclam=exclam)
 
 
 def hasattrs(obj, attrs):
