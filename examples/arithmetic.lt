@@ -13,6 +13,9 @@ x = 5
 func five() {
     return 5
 }
+func return_true() {
+    return true
+}
 
 exprs = [
     ["2+2*2", 6],
@@ -34,6 +37,7 @@ exprs = [
     ['-(1+x)', -6],
     ['---1', -1],
     ['-five()', -5],
+    ['!return_true()', false],
 ]
 
 print('x=', x, sep='')
