@@ -38,6 +38,8 @@ exprs = [
     ['---1', -1],
     ['-five()', -5],
     ['!return_true()', false],
+    ['-1**10', -1],
+    ['(-1)**10', 1]
 ]
 
 print('x=', x, sep='')
@@ -46,7 +48,6 @@ print('pi=', pi, sep='')
 for (i=0; i<exprs.length; i=i+1) {
     (expr, should_be) = exprs.get(i)
     result = eval expr
-
     print(expr, '=', result, end=' ')
 
     if (!(result == should_be)) {
