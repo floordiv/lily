@@ -18,8 +18,8 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
     for index, token in enumerate(stack):
         if token.type == MATHEXPR:
-            # print(token.value)
-            stack[index] = evaluate(token.value, context=context, return_token=True)
+            result = evaluate(token.value, context=context, return_token=True)
+            stack[index] = result
 
     while len(stack) > 1 or (stack and stack[0].primary_type in (PARENTHESIS, FCALL, VARIABLE)):
         op, op_start, op_end = get_op(stack)
@@ -82,7 +82,6 @@ def evaluate_op(op, context):
         return process_token(first, context)
 
     left, op, right = op
-    # print(left, op, right, '<- left, op, right')
 
     if op.type == POWER:
         return evaluate_pow(left, right, context)
@@ -106,6 +105,9 @@ def evaluate_pow(left, right, context):
 
     right_value = process_token(right, context).value
     result = left_value ** right_value
+
+    if isinstance(result, complex):
+        result = result.imag
 
     if post_unary is not None:
         result = -result if post_unary == '-' else +result
@@ -147,8 +149,6 @@ def process_token_exclam(token, of_token=None):
 
 def apply_token_unary(token, to_unary=None):
     if to_unary is None:
-        if isinstance(token, list):
-            print('what the fuck?', token)
         to_unary = token.unary
 
     token.value = -token.value if to_unary == '-' else token.value
