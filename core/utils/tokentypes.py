@@ -42,6 +42,7 @@ NEWLINE = 'NEWLINE'
 SEMICOLON = 'SEMICOLON'
 COMMA = characters[',']
 COLON = characters[':']
+POWER = characters['**']
 
 PARENTHESIS = 'PARENTHESIS'  # used for token primary-type
 BRACES = 'BRACES'    # ()
