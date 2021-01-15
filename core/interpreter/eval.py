@@ -1,7 +1,7 @@
 from core.utils.tools import create_token
 from core.utils.operators import executors
 from core.utils.tokens import BasicToken, ClassInstance
-from core.utils.tokentypes import (OPERATOR, FCALL,
+from core.utils.tokentypes import (OPERATOR, FCALL, POWER,
                                    PARENTHESIS, VARIABLE,
                                    pytypes2lotus, CLASSINSTANCE,
                                    LIST, DICT, TUPLE, MATHEXPR)
@@ -18,6 +18,7 @@ def evaluate(tokens, context: dict = None, return_token=False):
 
     for index, token in enumerate(stack):
         if token.type == MATHEXPR:
+            # print(token.value)
             stack[index] = evaluate(token.value, context=context, return_token=True)
 
     while len(stack) > 1 or (stack and stack[0].primary_type in (PARENTHESIS, FCALL, VARIABLE)):
@@ -29,7 +30,6 @@ def evaluate(tokens, context: dict = None, return_token=False):
             apply_token_unary(result, op.unary)
         else:
             result = evaluate_op(op, context)
-            apply_token_unary(result)
 
         stack[op_start:op_end] = [result]
 
@@ -51,7 +51,7 @@ def get_op(tokens):
         return op, 0, 1
 
     for index, token in enumerate(tokens):
-        if token.primary_type in (FCALL, PARENTHESIS):
+        if token.primary_type == FCALL:
             return token, index, index + 1
 
         if token.primary_type == OPERATOR and token.priority > op[1].priority:
@@ -65,23 +65,50 @@ def evaluate_op(op, context):
         op = [op]
 
     # to avoid multiple getitems
-    func = op[0]
+    first = op[0]
 
-    if hasattr(func, 'type') and func.type == FCALL:
-        function_response = func.execute(context)
+    if hasattr(first, 'primary_type') and first.type == FCALL:
+        function_response = first.execute(context)
         function_response_as_token = create_token(context, BasicToken, ClassInstance, function_response,
-                                                  unary=func.unary, exclam=func.exclam)
+                                                  unary=first.unary, exclam=first.exclam)
         process_token_exclam(function_response_as_token)
+        apply_token_unary(function_response_as_token)
 
         return function_response_as_token
     elif len(op) == 1:
-        return process_token(func, context)
+        if first.primary_type == PARENTHESIS:
+            first = evaluate(first.value, context, return_token=True)
+
+        return process_token(first, context)
 
     left, op, right = op
+    # print(left, op, right, '<- left, op, right')
+
+    if op.type == POWER:
+        return evaluate_pow(left, right, context)
+
     left = process_token(left, context).value
     right = process_token(right, context).value
     executor = executors[op.value]
     result = executor(left, right)
+
+    return create_token(context, BasicToken, ClassInstance, result)
+
+
+def evaluate_pow(left, right, context):
+    post_unary = None
+
+    if left.primary_type == PARENTHESIS:
+        left_value = evaluate(left.value, context)
+    else:
+        post_unary = left.unary
+        left_value = process_token(left, context).value
+
+    right_value = process_token(right, context).value
+    result = left_value ** right_value
+
+    if post_unary is not None:
+        result = -result if post_unary == '-' else +result
 
     return create_token(context, BasicToken, ClassInstance, result)
 
@@ -99,6 +126,10 @@ def process_token(token, context):
             apply_token_unary(value, to_unary=token.unary)
 
         return value
+    elif token.primary_type == PARENTHESIS:
+        result_token = evaluate(token.value, context, return_token=True)
+        apply_token_unary(result_token, token.unary)
+        token = result_token
 
     process_token_exclam(token)
 
@@ -116,6 +147,8 @@ def process_token_exclam(token, of_token=None):
 
 def apply_token_unary(token, to_unary=None):
     if to_unary is None:
+        if isinstance(token, list):
+            print('what the fuck?', token)
         to_unary = token.unary
 
     token.value = -token.value if to_unary == '-' else token.value
