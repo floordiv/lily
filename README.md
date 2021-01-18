@@ -1,4 +1,6 @@
 # Lily
+See dev-branch for actual version
+
 Lily is a Lotus interpreter implementation. It is a prototype!
 
 Generally, Lotus - is my own compilation of wishes about Python. Lily is an ethelon implementation of it (cause it is the only implementation, heh)
