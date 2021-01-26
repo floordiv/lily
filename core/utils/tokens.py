@@ -1,26 +1,32 @@
 from copy import deepcopy
-from typing import Any
+from types import ModuleType
+from importlib import import_module
 
-from lily.core.utils.contexts import Context
-from lily.core.utils.tools import split_tokens, create_token
-from lily.core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
-                                        FUNCASSIGN, VARASSIGN, FCALL,
-                                        BRANCH, WHILE_LOOP, FOR_LOOP,
-                                        BRACES, RETURN_STATEMENT, BREAK_STATEMENT,
-                                        CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
-                                        IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
-                                        COMMA, LIST, DICT)
+from core.utils.contexts import Context
+from core.utils.tools import create_token, process_escape_characters
+from core.utils.tokentypes import (IF_BLOCK, ELIF_BLOCK, ELSE_BLOCK,
+                                   FUNCASSIGN, VARASSIGN, FCALL,
+                                   BRANCH, WHILE_LOOP, FOR_LOOP,
+                                   RETURN_STATEMENT, BREAK_STATEMENT,
+                                   CONTINUE_STATEMENT, VARIABLE, MATHEXPR,
+                                   IMPORT_STATEMENT, CLASSASSIGN, CLASSINSTANCE,
+                                   LIST, TUPLE, EXECUTE_CODE, EVALUATE_CODE,
+                                   STRING, PARENTHESIS, TRY_EXCEPT_BLOCK,
+                                   PYIMPORT_STATEMENT)
 
 
 class BasicToken:
-    def __init__(self, context, typeof, value, unary='+', primary_type=None):
+    def __init__(self, context, typeof,
+                 value, unary='+', exclam=False,
+                 primary_type=None, lineno=None):
         self.context = context
         self.type = typeof
         self.value: any = value
         self.unary = unary
         self.primary_type = primary_type or typeof
         self.priority = 0
-        self.exclam = False  # also known as `!var`. If true, value has to be swapped
+        self.exclam = exclam  # also known as `!var`. If true, value has to be swapped
+        self.lineno = lineno
 
     def clone(self):
         value = self.value
@@ -42,7 +48,8 @@ class BasicToken:
             'value': self.value,
             'unary': self.unary,
             'priority': self.priority,
-            'exclam': self.exclam
+            'exclam': self.exclam,
+            'lineno': self.lineno,
         }
 
     def __str__(self):
@@ -57,14 +64,18 @@ class BasicToken:
 
 
 class FunctionCall:
-    def __init__(self, evaluator, func_name, args, kwargs, unary):
+    def __init__(self, evaluator, func_name,
+                 args, kwargs, unary,
+                 exclam, lineno):
         self.evaluator = evaluator
         self.name = func_name
         self.args = args
         self.kwargs = kwargs
         self.unary = unary
+        self.lineno = lineno
 
         self.type = self.primary_type = FCALL
+        self.exclam = exclam
 
     def execute(self, context):
         func = context[self.name]
@@ -72,7 +83,7 @@ class FunctionCall:
         kwargs = {}
 
         for arg in self.args:
-            if arg.type == VARIABLE:
+            if arg.type == VARIABLE or arg.primary_type == PARENTHESIS:
                 arg_value = self.evaluator([arg], context=context)
             elif arg.type == MATHEXPR:
                 arg_value = self.evaluator(arg.value, context)
@@ -90,7 +101,7 @@ class FunctionCall:
             if isinstance(kwval, BasicToken):
                 kwval = kwval.value
 
-            kwargs[kwvar] = kwval
+            kwargs[kwvar.value] = kwval
 
         return func(*args, **kwargs)
 
@@ -101,13 +112,14 @@ class FunctionCall:
 
 
 class Function:
-    def __init__(self, executor, func_name, args, kwargs, code):
+    def __init__(self, executor, func_name, args, kwargs, code, lineno):
         self.executor = executor
         self.name = func_name
         self.args = args
         self.kwargs = kwargs
         self.code = code
         self.extend_args = ()
+        self.lineno = lineno
 
         self.expected_args = len(args)
         self.type = self.primary_type = FUNCASSIGN
@@ -124,7 +136,7 @@ class Function:
             temp_context[arg.value] = given_arg
 
         for default_kw_var, default_kw_val in self.kwargs.items():
-            temp_context[default_kw_var] = default_kw_val
+            temp_context[default_kw_var.value] = default_kw_val
 
         for kw_var, kw_val in kwargs.items():
             if kw_var not in self.kwargs:
@@ -153,11 +165,12 @@ class Function:
 
 
 class Class:
-    def __init__(self, context, executor, name, body):
+    def __init__(self, context, executor, name, body, lineno):
         self.context = context
         self.executor = executor
         self.name = name
         self.body = self.value = body
+        self.lineno = lineno
 
         self.type = self.primary_type = CLASSASSIGN
 
@@ -171,16 +184,17 @@ class Class:
         Custom __new__ functions are currently unsupported
         """
 
-        return ClassInstance(self.executor, init_args, init_kwargs, self.body)
+        return ClassInstance(self.executor, init_args, init_kwargs, self.body, self.lineno)
 
 
 class ClassInstance:
-    def __init__(self, executor, init_args, init_kwargs, body):
+    def __init__(self, executor, init_args, init_kwargs, body, lineno):
         self.instcontext = Context()
         self.executor = executor
         self.init_args = init_args
         self.init_kwargs = init_kwargs
         self.body = self.value = body
+        self.lineno = lineno
 
         self.type = self.primary_type = CLASSINSTANCE
 
@@ -252,9 +266,10 @@ class Branch:
 
 
 class IfBranchLeaf:
-    def __init__(self, expr, code):
+    def __init__(self, expr, code, lineno):
         self.expr = deepcopy(expr)
         self.code = code
+        self.lineno = lineno
 
         self.type = self.primary_type = IF_BLOCK
 
@@ -263,9 +278,10 @@ class IfBranchLeaf:
 
 
 class ElifBranchLeaf:
-    def __init__(self, expr, code):
+    def __init__(self, expr, code, lineno):
         self.expr = deepcopy(expr)
         self.code = code
+        self.lineno = lineno
 
         self.type = self.primary_type = ELIF_BLOCK
 
@@ -274,8 +290,9 @@ class ElifBranchLeaf:
 
 
 class ElseBranchLeaf:
-    def __init__(self, code):
+    def __init__(self, code, lineno):
         self.code = code
+        self.lineno = lineno
 
         self.type = self.primary_type = ELSE_BLOCK
 
@@ -284,13 +301,15 @@ class ElseBranchLeaf:
 
 
 class ForLoop:
-    def __init__(self, executor, evaluator, begin, end, step, code):
+    def __init__(self, executor, evaluator, begin, end, step, code,
+                 lineno):
         self.executor = executor
         self.evaluator = evaluator
         self.begin = begin
         self.end = deepcopy(end[0].value)
         self.step = step
         self.code = code
+        self.lineno = lineno
 
         self.type = self.primary_type = FOR_LOOP
 
@@ -311,11 +330,12 @@ class ForLoop:
 
 
 class WhileLoop:
-    def __init__(self, executor, evaluator, expr, code):
+    def __init__(self, executor, evaluator, expr, code, lineno):
         self.executor = executor
         self.evaluator = evaluator
         self.expr = deepcopy(expr)
         self.code = code
+        self.lineno = lineno
 
         self.type = self.primary_type = WHILE_LOOP
 
@@ -331,58 +351,49 @@ class WhileLoop:
 
 
 class VarAssign:
-    def __init__(self, evaluator, name, value):
-        if value.type == MATHEXPR:
-            value = value.value
-
+    def __init__(self, evaluator, name, value, lineno):
         self.evaluator = evaluator
         self.name = name
-        self.value: Any = value
+        self.value = value
+        self.lineno = lineno
 
         self.type = self.primary_type = VARASSIGN
 
     def execute(self, context):
-        if not isinstance(self.value, list):
-            self.value = [self.value]
+        value = self.value
 
-        names = self.name
+        if hasattr(value, 'execute'):
+            value = value.execute(context)
 
-        if names.type == BRACES:
-            names = [token.value for token in names.value if token.type != COMMA]
-            value = self.get_processed_value(context)
+            if not hasattr(value, 'primary_type') and not isinstance(value, ModuleType):
+                value = create_token(context, BasicToken, ClassInstance, value)
+
+        if hasattr(value, 'primary_type') and value.type == MATHEXPR:
+            value = self.evaluator(value.value, context, return_token=True)
+
+        if hasattr(self.name, 'primary_type') and self.name.type == TUPLE:
+            if value.type not in (LIST, TUPLE):
+                raise TypeError('only lists and tuples can be unpacked')
+
+            to_assign = zip(self.name.value, value.value)
         else:
-            names = [names.value]
-            value = self.value
+            to_assign = [[self.name, value]]
 
-        if hasattr(value, 'type'):
-            if value.type == LIST:
-                value = value.value
-        else:
-            if not isinstance(value, (list, tuple)):
-                value = split_tokens(value, COMMA)
+        for var, val in to_assign:
+            if var.type != VARIABLE:
+                raise SyntaxError('assigning value to non-variable')
+            elif hasattr(val, 'primary_type') and val.type == MATHEXPR:
+                val = val.value
 
-        if len(names) > 1:
-            for var, val in zip(names, value):
-                if not hasattr(val, 'type'):
-                    val = create_token(context, BasicToken, val)
-
+            if hasattr(val, 'primary_type') and val.type in (CLASSASSIGN, CLASSINSTANCE):
+                result = val
+            else:
                 if not isinstance(val, list):
                     val = [val]
 
-                self.assign(context, var, self.evaluator(val, context))
-        else:
-            self.assign(context, names[0], self.evaluator(value, context))
+                result = self.evaluator(val, context)
 
-    def assign(self, context, name, value):
-        context[name] = value
-
-    def get_processed_value(self, context):
-        value: Any = self.value[0]
-
-        if hasattr(value, 'execute'):
-            return value.execute(context)
-
-        return value.value
+            context[var.value] = result
 
     def __str__(self):
         return f'VarAssign(name={repr(self.name)}, value={repr(self.value)})'
@@ -391,17 +402,18 @@ class VarAssign:
 
 
 class ReturnStatement:
-    def __init__(self, evaluator, value):
+    def __init__(self, evaluator, value, lineno, dont_evaluate_value=False):
         self.evaluator = evaluator
         self.value = value
+        self.lineno = lineno
 
         self.type = self.primary_type = RETURN_STATEMENT
-        self.value_already_executed = False
+        self.value_already_evaluated = dont_evaluate_value
 
     def execute_value(self, context):
-        if not self.value_already_executed:
+        if not self.value_already_evaluated:
             self.value = self.evaluator(self.value, context=context)
-            self.value_already_executed = True
+            self.value_already_evaluated = True
 
         return self.value
 
@@ -412,8 +424,9 @@ class ReturnStatement:
 
 
 class BreakStatement:
-    def __init__(self):
-        self.type = BREAK_STATEMENT
+    def __init__(self, lineno):
+        self.type = self.primary_type = BREAK_STATEMENT
+        self.lineno = lineno
 
     def __str__(self):
         return 'BREAK'
@@ -422,8 +435,9 @@ class BreakStatement:
 
 
 class ContinueStatement:
-    def __init__(self):
+    def __init__(self, lineno):
         self.type = self.primary_type = CONTINUE_STATEMENT
+        self.lineno = lineno
 
     def __str__(self):
         return 'CONTINUE'
@@ -432,9 +446,10 @@ class ContinueStatement:
 
 
 class ImportStatement:
-    def __init__(self, path, name):
+    def __init__(self, path, name, lineno):
         self.path = self.value = path + '.lt'
         self.name = name
+        self.lineno = lineno
 
         self.type = self.primary_type = IMPORT_STATEMENT
 
@@ -443,3 +458,100 @@ class ImportStatement:
 
     __repr__ = __str__
 
+
+class PyimportStatement:
+    def __init__(self, path, name, lineno):
+        self.path = self.value = path
+        self.name = name
+        self.lineno = lineno
+
+        self.type = self.primary_type = PYIMPORT_STATEMENT
+
+    def execute(self, context):
+        context[self.name] = import_module(self.path)
+
+    def __str__(self):
+        return f'IMPORT({self.name}:{self.path})'
+
+    __repr__ = __str__
+
+
+class ExecuteCode:
+    def __init__(self, executor, semantic_parser, code, lineno):
+        self.executor = executor
+        self.semantic_parser = semantic_parser
+        self.code = code
+        self.lineno = lineno
+
+        self.type = self.primary_type = EXECUTE_CODE
+
+    def execute(self, context):
+        from core.lexer.lexer import Lexer
+
+        if self.code.type == STRING:
+            raw_code = self.code.value
+        elif self.code.type == VARIABLE:
+            raw_code = context[self.code.value]
+        elif hasattr(self.code, 'execute'):
+            raw_code = self.code.execute(context)
+        else:
+            raise TypeError('only string or variable can be given to exec')
+
+        if (hasattr(raw_code, 'primary_type') and raw_code.type != STRING)\
+                or not isinstance(raw_code, str):
+            raise SyntaxError('only string can be given to exec')
+
+        # raw_code now is string (I hope)
+        lexer = Lexer(process_escape_characters(raw_code))
+        code = lexer.parse(context=context)
+
+        return self.executor(self.semantic_parser(code), context=context)
+
+
+class EvaluateCode:
+    def __init__(self, evaluator, semantic_parser, code,
+                 lineno):
+        self.evaluator = evaluator
+        self.semantic_parser = semantic_parser
+        self.code = code
+        self.lineno = lineno
+
+        self.type = self.primary_type = EVALUATE_CODE
+
+    def execute(self, context):
+        from core.lexer.lexer import Lexer
+
+        if self.code.type == STRING:
+            raw_code = self.code.value
+        elif self.code.type == VARIABLE:
+            raw_code = context[self.code.value]
+        elif hasattr(self.code, 'execute'):
+            raw_code = self.code.execute()
+        else:
+            raise TypeError('only string or variable can be given to exec')
+
+        if (hasattr(raw_code, 'primary_type') and raw_code.type != STRING)\
+                or not isinstance(raw_code, str):
+            raise SyntaxError('only string can be given to exec')
+
+        # raw_code now is string (I hope)
+        lexer = Lexer(process_escape_characters(raw_code))
+        code = lexer.parse(context=context)
+
+        return self.evaluator(self.semantic_parser(code), context=context)
+
+
+class TryExceptBlock:
+    def __init__(self, executor, code, errhandler, lineno):
+        self.executor = executor
+        self.code = code
+        self.errhandler = errhandler
+        self.lineno = lineno
+
+        self.type = self.primary_type = TRY_EXCEPT_BLOCK
+
+    def execute(self, context):
+        try:
+            self.executor(self.code, context=context)
+        except:
+            self.executor(self.errhandler, context=context)

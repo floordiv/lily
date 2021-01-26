@@ -1,0 +1,7 @@
+exec "print('me')"
+
+x = 2
+print(eval "1+1*x")
+
+exec "func get_string() { return \"print('passed!')\" }"
+exec get_string()

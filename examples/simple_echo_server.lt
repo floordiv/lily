@@ -1,0 +1,15 @@
+socket = pyimport('pysocket')
+sock = socket.Socket()
+sock.bind('localhost', 8585)
+sock.listen(1)
+
+(conn, addr) = sock.accept()
+(ip, port) = addr
+
+print('Connection: ', ip, ':', port, sep='')
+
+conn.send(to_bytes('hello from server!'))
+response = conn.recv(1024)
+print('Received response:', from_bytes(response))
+conn.close()
+sock.close()

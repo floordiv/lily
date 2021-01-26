@@ -1,4 +1,4 @@
-from lily.core.utils.operators import characters
+from core.utils.operators import characters
 
 
 # built-in data types
@@ -8,6 +8,7 @@ FLOAT = 'FLOAT'
 STRING = 'STRING'
 LIST = 'LIST'
 DICT = 'DICT'
+TUPLE = 'TUPLE'
 BOOL = 'BOOL'
 NULL = 'NULL'
 
@@ -28,6 +29,11 @@ RETURN_STATEMENT = 'RETURN_STATEMENT'
 BREAK_STATEMENT = 'BREAK_STATEMENT'
 CONTINUE_STATEMENT = 'CONTINUE_STATEMENT'
 IMPORT_STATEMENT = 'IMPORT_STATEMENT'
+PYIMPORT_STATEMENT = 'PYIMPORT_STATEMENT'
+MODULE = 'MODULE'
+EXECUTE_CODE = 'EXECUTE_CODE'
+EVALUATE_CODE = 'EVALUATE_CODE'
+TRY_EXCEPT_BLOCK = 'TRY_EXCEPT_BLOCK'
 
 # types for lexer
 NO_TYPE = 'NO_TYPE'
@@ -36,6 +42,7 @@ NEWLINE = 'NEWLINE'
 SEMICOLON = 'SEMICOLON'
 COMMA = characters[',']
 COLON = characters[':']
+POWER = characters['**']
 
 PARENTHESIS = 'PARENTHESIS'  # used for token primary-type
 BRACES = 'BRACES'    # ()

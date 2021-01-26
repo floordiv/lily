@@ -1,0 +1,60 @@
+pyimport "math" as math
+
+
+print(!false, 'should equal True')
+print(-!false, 'should equal -1')
+print(false || true, 'should equal True')
+print(true && true, 'should equal True')
+print(false && true, 'should equal False')
+
+pi = math.pi
+x = 5
+
+func five() {
+    return 5
+}
+func return_true() {
+    return true
+}
+
+exprs = [
+    ["2+2*2", 6],
+    ["(2+2)+(2+2)", 8],
+    ["-(2+2)+-(2+2)", -8],
+    ["(2+2)*-(2+2)", -16],
+    ["-(-(-(-(3*88888))))", 266664],
+    ["pi*2", 6.283185307179586],
+    ["(pi+1)*(pi+2)", 21.294382361858737],
+    ["-pi", -3.141592653589793],
+    ["pi**2", 9.869604401089358],
+    ['1+(1+1)', 3],
+    ['(1+1)+1', 3],
+    ['(1+1)+(1+1)', 4],
+    ['-(1+1)+(1+1)', 0],
+    ['+-(1+1)+(1+1)', 0],
+    ['-+(1+1)+(1+1)', 0],
+    ['(-5)', -5],
+    ['-(1+x)', -6],
+    ['---1', -1],
+    ['-five()', -5],
+    ['!return_true()', false],
+    ['-1**10', -1],
+    ['(-1)**10', 1],
+    ['1+--2', 3],
+    ['-1**(1/2)', -1],  # square root of -1
+]
+
+print('x=', x, sep='')
+print('pi=', pi, sep='')
+
+for (i=0; i<exprs.length; i=i+1) {
+    (expr, should_be) = exprs.get(i)
+    result = eval expr
+    print(expr, '=', result, end=' ')
+
+    if (!(result == should_be)) {
+        print('wrong (should be ', should_be, ')', sep='')
+    } else {
+        print('correct')
+    }
+}

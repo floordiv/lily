@@ -10,7 +10,7 @@ class FirstClass {}
 
 class FirstClass.MyClass {   # declare class MyClass in FirstClass
     func hello_world(cls) {
-        print('hello, world!')
+       print('hello, world!')
     }
 }
 

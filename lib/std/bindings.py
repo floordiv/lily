@@ -10,7 +10,9 @@ pybindings = {
     'getattr': getattr,
     'hasattr': hasattr,
     'setattr': setattr,
-    'pyimport': import_module,
+    'import_py_module': import_module,
+    'to_bytes': lambda string: string.encode(),
+    'from_bytes': lambda bytes_array: bytes_array.decode(),
 
     '__version__': (0, 0, 1),
     '__author__': 'floordiv',

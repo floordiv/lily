@@ -1,0 +1,9 @@
+try {
+    print('this is a codeblock')
+    print(1/0)
+    print('caught exception...')
+} except {
+    print('ha! exception caught')
+}
+
+print('why?')
